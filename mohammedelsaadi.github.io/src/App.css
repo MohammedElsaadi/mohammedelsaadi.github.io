@@ -1,0 +1,93 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;800&family=Poppins:wght@300;400;500;600;700&display=swap");
+
+* {
+  font-family: "Poppins", "sans-sarif";
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tabs label {
+  order: 1;
+  display: block;
+  padding: 1rem 2rem;
+  margin-right: 0.2rem;
+  cursor: pointer;
+  background: #90f997;
+  font-weight: bold;
+  transform: background ease 0.2s;
+  border-radius: 1rem 1rem 0 0;
+}
+
+.tabs .tab {
+  order: 99;
+  flex-grow: 1;
+	width: 100%;
+	display: none;
+  padding: 1rem;
+  background: #fff;
+  box-shadow: 1rem 1rem #86b089;  
+  border-radius: 0 1rem 1rem 1rem;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tab p {
+  margin: 0 1rem 1rem 1rem;
+}
+
+.aboutme-text {
+  display: flex;
+}
+.tabs input[type="radio"] {
+	display: none;
+}
+.tabs input[type="radio"]:checked + label {
+	background: #fff;
+}
+.tabs input[type="radio"]:checked + label + .tab {
+	display: flex;
+}
+
+@media (max-width: 45em) {
+  .tabs .tab,
+  .tabs label {
+    order: initial;
+  }
+  .tabs label {
+    width: 100%;
+    margin-right: 0;
+    margin-top: 0.2rem;
+  }
+}
+
+.tabs .tab h1 {
+  text-align: center;
+  width: 100%;
+}
+
+
+body {
+  background: #eee;
+  min-height: 100vh;
+	box-sizing: border-box;
+	padding-top: 15vh;
+  font-weight: 300;
+  line-height: 1.5;
+  max-width: 60rem;
+  margin: 0 auto;
+  font-size: 112%;
+}
+
+.my-photo {
+  display: flex;
+  width: 25%;
+  border-radius: 50%;
+  border: 0.5rem solid #86b089;
+  margin: 1rem;
+}
