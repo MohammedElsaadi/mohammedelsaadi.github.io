@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useEffect } from 'react';
 import './App.css';
 import Mohammed_ElSaadi_Photo from './Mohammed_ElSaadi_Photo.jpg'
 import { useState } from 'react';
@@ -39,15 +39,28 @@ function App() {
         <input value="option3" checked={selectedValue === 'option3'} onChange={handleChange} type="radio" name="tabs" id="tab3"></input>
         <label htmlFor="tab3">Contact</label>
         <div className="tab">
-          <h1>Contact Me</h1>
-          <p>contact info</p>
+          <h1>Contact</h1>
+          <div className='contact'>
+            <div>
+              <p>Email:</p>
+              <p>mohammedelsaadi@gmail.com</p>
+            </div>
+            <div>
+              <p>LinkedIn:</p>
+              <p className='linkedin'><a href='https://www.linkedin.com/in/moelsaadi/'>https://www.linkedin.com/in/moelsaadi/</a></p>
+            </div>
+            <div>
+              <p>phone:</p>
+              <p>+1(226)787-2414</p>
+            </div>
+          </div>
         </div>
 
         <input value="option4" checked={selectedValue === 'option4'} onChange={handleChange} type="radio" name="tabs" id="tab4"></input>
         <label htmlFor="tab4">Resume</label>
         <div className="tab">
           <h1>Resume</h1>
-          <p>My Resume</p>
+          <a href="/Mohammed El-Saadi Resume.pdf" target='_blank'>click here to open my resume</a>
         </div>
       </div>
     </div>
