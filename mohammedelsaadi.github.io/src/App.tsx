@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useEffect } from 'react';
 import './App.css';
 import Mohammed_ElSaadi_Photo from './Mohammed_ElSaadi_Photo.jpg'
 import { useState } from 'react';
@@ -98,7 +98,7 @@ function App() {
         <label htmlFor="tab5">Resume</label>
         <div className="tab">
           <h1>Resume</h1>
-          <p>My Resume</p>
+          <a href="/Mohammed El-Saadi Resume.pdf" target='_blank'>click here to open my resume</a>
         </div>
       </div>
     </div>

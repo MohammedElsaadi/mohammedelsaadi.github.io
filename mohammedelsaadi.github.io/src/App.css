@@ -31,7 +31,7 @@
 	width: 100%;
 	display: none;
   padding: 1rem;
-  background: #fffdec;
+  background: #fff;
   box-shadow: 1rem 1rem #86b089;  
   border-radius: 0 1rem 1rem 1rem;
   flex-direction: column;
@@ -54,6 +54,7 @@
   margin: 1rem 0;
 }
 
+
 .tab p {
   width: 95%;
   margin: 0 1rem 0.5rem 1rem;
@@ -72,6 +73,22 @@
   width: 100%;
   text-align: center;
 }
+
+td {
+  padding: 0 1rem;
+}
+
+.contact p {
+  width: auto;
+  float: left;
+}
+
+.contact {
+  background-color: #eee;
+  border-radius: 1rem;
+  padding: 2rem 1rem 1rem 1rem;
+}
+
 
 .aboutme-text {
   display: flex;
