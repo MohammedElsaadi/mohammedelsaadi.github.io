@@ -40,7 +40,10 @@ function App() {
             </div>
         </div>
         <section id="About">
-          <button>Hello</button>
+          <div className='about'>
+            <h2>About Me</h2>
+            <h4></h4>
+          </div>
         </section>
       </body>
     </div>
