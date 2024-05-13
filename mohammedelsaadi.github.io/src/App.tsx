@@ -27,22 +27,21 @@ function App() {
               <div className='title'><span>Full-Stack Developer</span></div>
               <div className='title'><span>Tech Lead</span></div>
               <div className='title'><span>Freelancer</span></div>
+              <div className='buttons'>
+              <a href="#About">About Me</a>
+              <a href="#Projects">Projects</a>
+              <a href="#Contact">Contact Me</a>
+            </div>
             </div>
 
             <div className='scroll-indicator'>
-              <div className="chevron"></div>
-              <div className="chevron"></div>
-              <div className="chevron"></div>
+
               <span className="scroll-text">Scroll down</span>
             </div>
         </div>
-        <div className='NavBar'>
-            <div className='buttons'>
-              <button>About Me</button>
-              <button>Projects</button>
-              <button>Contact Me</button>
-            </div>
-        </div>
+        <section id="About">
+          <button>Hello</button>
+        </section>
       </body>
     </div>
 

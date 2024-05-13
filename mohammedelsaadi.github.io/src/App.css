@@ -49,6 +49,27 @@ body{
   background-color: rgb(92, 110, 100);
 }
 
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+  a{
+    font-size: 24px;
+    color: white;
+    text-decoration: underline;
+
+    @media only screen and (max-width: 410px) {
+        font-size: 18px;
+    }
+  }
+}
+
+a:nth-child(2){
+  margin: 0 2rem;
+  border: none;
+}
+
 .texts {
   position: absolute;
   top: 25%;
@@ -90,6 +111,11 @@ body{
     right: 0;
 
     padding: 1rem;
+
+    @media only screen and (max-height: 730px) {
+      top: 30%;
+    }
+
   }
 
   @media only screen and (max-width: 853px) {
@@ -124,13 +150,14 @@ body{
   }
 
   @media only screen and (max-width: 450px) {
-    top: 65%;
+    top: 50%;
     background: rgb(0,0,0,0.50);
     .name {
       font-size: 30px;
     }
     .title {
-      font-size: 18px;
+      font-size: 24px;
+      font-weight: normal;
     }
   }
 
@@ -140,83 +167,24 @@ body{
       font-size: 24px;
     }
     .title {
-      font-size: 18px;
+      font-size: 24px;
     }
   }
 }
 
 .scroll-indicator {
   position: absolute;
-  width: 1.5rem;
+  width: 100%;
   height: 1rem;
-  bottom: 12%;
-  margin: auto;
+  bottom: 1%;
   right: 0;
   left: 0;
-}
-
-.chevron {
-  position: absolute;
-  width: 1.75rem;
-  height: 0.5rem;
-  opacity: 0;
-  transform: scale3d(0.5,0.5,0.5);
-  animation: move 3s ease-out infinite;
-}
-
-.chevron:first-child {
-  animation: move 3s ease-out 1s infinite;
-}
-
-.chevron:nth-child(2) {
-  animation: move 3s ease-out 2s infinite;
-}
-
-.chevron:before,
-.chevron:after {
-  content: ' ';
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 51%;
-  background: #fff;
-}
-
-.chevron:before {
-  left: 0;
-  transform: skew(0deg, 30deg);
-}
-
-.chevron:after {
-  right: 0;
-  width: 50%;
-  transform: skew(0deg, -30deg);
-}
-
-@keyframes move {
-  25% {
-    opacity: 1;
-
-  }
-  33% {
-    opacity: 1;
-    transform: translateY(30px);
-  }
-  67% {
-    opacity: 1;
-    transform: translateY(40px);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(55px) scale3d(0.5, 0.5, 0.5);
-  }
+  justify-content: center;
+  text-align: center;
 }
 
 .scroll-text {
   display: block;
-  margin-top: 75px;
-  margin-left: -27.5px;
-  font-size: 12px;
   color: white;
   text-transform: uppercase;
   white-space: nowrap;
@@ -227,6 +195,23 @@ body{
 @keyframes pulse {
   to {
     opacity: 1;
+  }
+}
+
+.NavBar {
+  width: 100%;
+  display: flex;
+  top: 0;
+  padding: 0 1rem;
+  justify-content: space-evenly;
+  position: absolute;
+
+  button {
+    background-color: transparent;
+    border: none;
+    padding: 0.5rem;
+    color: white;
+    text-decoration: underline;
   }
 }
 
