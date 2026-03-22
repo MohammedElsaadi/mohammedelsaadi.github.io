@@ -36,6 +36,7 @@ export function Hero() {
             <a href="#about" className="px-5 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">About</a>
             <a href="#projects" className="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition">Projects</a>
             <a href="#contact" className="px-5 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">Contact</a>
+            <a href="#resume" className="px-5 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition">Resume</a>
           </div>
         </div>
       </div>
