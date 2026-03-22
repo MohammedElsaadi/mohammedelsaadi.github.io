@@ -1,8 +1,6 @@
-import * as React from "react";
-
 export interface IResumeProps {}
 
-export function Resume(props: IResumeProps) {
+export function Resume() {
   return (
     <section id="resume" className="py-20 px-4 bg-white">
       <div className="max-w-2xl mx-auto">
