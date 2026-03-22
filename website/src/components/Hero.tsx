@@ -1,9 +1,8 @@
-import * as React from 'react';
 import HeroImage from "../assets/Mohammed Elsaadi Photo Square.png";
 
 export interface IHeroProps {}
 
-export function Hero(props: IHeroProps) {
+export function Hero() {
   return (
     <section className="relative flex flex-col md:flex-row h-screen bg-emerald-800">
       {/* Left: Full-height image, flush against the edge */}

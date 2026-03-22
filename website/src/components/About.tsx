@@ -1,8 +1,6 @@
-import * as React from 'react';
-
 export interface IAboutProps {}
 
-export function About(props: IAboutProps) {
+export function About() {
   return (
     <section id="about" className="py-20 px-4 bg-white">
       <div className="max-w-3xl mx-auto">

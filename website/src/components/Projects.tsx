@@ -1,6 +1,3 @@
-import * as React from 'react';
-import { compile } from 'tailwindcss';
-
 export interface IProjectsProps {}
 
 const projects = [
@@ -73,7 +70,7 @@ const projects = [
   },
 ];
 
-export function Projects(props: IProjectsProps) {
+export function Projects() {
   return (
     <section id="projects" className="bg-emerald-700 py-20 px-4">
       <div className="max-w-5xl mx-auto bg-gray-50 rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">

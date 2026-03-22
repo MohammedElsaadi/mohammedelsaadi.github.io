@@ -4,7 +4,7 @@ import { FaLinkedin } from "react-icons/fa";
 
 export interface IContactProps {}
 
-export function Contact(props: IContactProps) {
+export function Contact() {
   const email = "mohammedelsaadi@gmail.com";
   const [copied, setCopied] = React.useState(false);
 
