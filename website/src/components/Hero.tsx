@@ -1,6 +1,6 @@
 import HeroImage from "../assets/Mohammed Elsaadi Photo Square.png";
-import MurphyImg1 from "../assets/murphy-1.png";
-import MurphyImg2 from "../assets/murphy-2.png";
+import MurphyImg1 from "../assets/Murphy-1.png";
+import MurphyImg2 from "../assets/Murphy-2.png";
 
 export interface IHeroProps {}
 
