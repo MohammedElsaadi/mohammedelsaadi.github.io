@@ -2,7 +2,7 @@ export interface IAboutProps {}
 
 export function About() {
   return (
-    <section id="about" className="py-20 px-4 bg-white">
+    <section id="about" className="py-10 px-4 bg-white">
       <div className="max-w-3xl mx-auto">
         <h2 className="text-3xl font-bold mb-4">About Me</h2>
 
