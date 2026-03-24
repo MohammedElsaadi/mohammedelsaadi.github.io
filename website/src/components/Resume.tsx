@@ -1,5 +1,3 @@
-import MohammedResume from "../assets/Mohammed Elsaadi Resume.pdf";
-
 export interface IResumeProps {}
 
 export function Resume() {
@@ -11,7 +9,7 @@ export function Resume() {
           You can view and download my resume below.
         </p>
         <a
-          href={MohammedResume}
+          href="/assets/Mohammed Elsaadi Resume.pdf"
           download
           className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
         >
