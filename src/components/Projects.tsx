@@ -72,11 +72,11 @@ const projects = [
 
 export function Projects() {
   return (
-    <section id="projects" className="bg-emerald-700 py-20 px-4">
-      <div className="max-w-5xl mx-auto bg-gray-50 rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+    <section id="projects" className="bg-gradient-to-b from-[var(--color-lighter-blue)] to-[var(--color-darker-blue)] py-20 px-4">
+      <div className="max-w-5xl mx-auto bg-white/80 rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
         <div className="mb-10">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Projects</h2>
-          <p className="mt-3 text-gray-600 max-w-2xl">
+          <p className="mt-3 text-md md:text-xl text-gray-900 max-w-4xl">
             A selection of projects spanning mobile apps, internal business platforms,
             analytics dashboards, and augmented reality solutions.
           </p>
@@ -86,12 +86,12 @@ export function Projects() {
           {projects.map((project) => (
             <article
               key={project.title}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+              className="bg-white/50 rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
             >
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-4">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900">{project.title}</h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-md text-gray-500">
                     {project.company} • {project.period}
                   </p>
                 </div>

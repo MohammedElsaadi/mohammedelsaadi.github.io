@@ -9,7 +9,7 @@ export interface IHeroProps {}
 export function Hero() {
   const [showMurphyHover, setShowMurphyHover] = useState(false);
   return (
-    <section className="relative flex flex-col lg:flex-row h-screen bg-emerald-800 overflow-hidden">
+    <section className="relative flex flex-col lg:flex-row h-screen bg-gradient-to-b from-[var(--color-lighter-emerald)] to-[var(--color-darker-emerald)] overflow-hidden">
       {/* Left: Full-height image, flush against the edge */}
       <div className="lg:w-1/2 w-full h-full lg:h-screen min-w-[320px] flex justify-start relative z-0">
         <img
@@ -37,42 +37,41 @@ export function Hero() {
           <h1 className="text-3xl md:text-5xl font-extrabold mb-2">
             Mohammed Elsaadi
           </h1>
-          <h3 className="text-md underline">Senior Full-Stack Software Developer</h3>
+          <h3 className="text-lg md:text-xl underline">Senior Full-Stack Software Developer</h3>
           <p className="text-md md:text-xl mb-6 text-gray-600">
-            I am driven to build creative and effective solutions that leave a positive impact.
-             I am driven by a passion for learning and innovation, 
-             and I thrive on solving complex problems with elegant code. 
-             I specialize in C#, .NET, and React, and I love taking projects from concept to reality.
-              Let's create something amazing together!
+            I’m a full-stack developer who loves building creative and effective software that solves real problems and creates a meaningful impact.
+
+I enjoy working across the stack, from designing clean user experiences to building reliable backend systems. My main strengths are in C#, .NET, and React, and I’m especially passionate about taking ideas from early concept to polished, practical products.
+
           </p>
           <div className="flex gap-4 flex-wrap justify-center w-full">
             <a
               href="#about"
-              className="px-5 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition"
+              className="px-5 py-2 bg-[var(--color-lighter-red)] text-white rounded-lg font-semibold hover:bg-[var(--color-darker-red)] transition"
             >
               About
             </a>
             <a
-              href="#resume"
-              className="px-5 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition"
-            >
-              Resume
-            </a>
-            <a
               href="#projects"
-              className="px-5 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition"
+              className="px-5 py-2 bg-[var(--color-lighter-blue)] text-white rounded-lg font-semibold hover:bg-[var(--color-darker-blue)] transition"
             >
               Projects
             </a>
             <a
+              href="#resume"
+              className="px-5 py-2 bg-[var(--color-lighter-emerald)] text-white rounded-lg font-semibold hover:bg-[var(--color-darker-emerald)] transition"
+            >
+              Resume
+            </a>
+            <a
               href="#contact"
-              className="px-5 py-2 bg-amber-600 text-white rounded-lg font-semibold hover:bg-amber-700 transition"
+              className="px-5 py-2 bg-[var(--color-lighter-red)] text-white rounded-lg font-semibold hover:bg-[var(--color-darker-red)] transition"
             >
               Contact
             </a>
             <Link
               to="/games"
-              className="px-5 py-2 bg-gray-800 text-white rounded-lg font-semibold hover:bg-gray-900 transition"
+              className="px-5 py-2 bg-[var(--color-lighter-blue)] text-white rounded-lg font-semibold hover:bg-[var(--color-darker-blue)] transition"
             >
               Games
             </Link>

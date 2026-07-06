@@ -9,10 +9,15 @@ function Home () {
   return (
        <>
       <Hero />
+      <div className="h-1 bg-black" />
       <About />
-      <Resume />
+      <div className="h-1 bg-black" />
       <Projects />
+      <div className="h-1 bg-black" />
+      <Resume />
+      <div className="h-1 bg-black" />
       <Contact />
+      <div className="h-1 bg-black" />
       <Murphy/>
     </>
   );

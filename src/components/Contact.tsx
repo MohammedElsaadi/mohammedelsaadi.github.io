@@ -15,10 +15,10 @@ export function Contact() {
   };
 
   return (
-    <section id="contact" className="py-20 px-4 bg-white">
-      <div className="max-w-2xl mx-auto">
+    <section id="contact" className="py-20 px-4 bg-gradient-to-b from-[var(--color-lighter-red)] to-[var(--color-darker-red)]">
+      <div className="max-w-5xl mx-auto bg-white/90 rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
         <h2 className="text-3xl font-bold mb-4">Contact</h2>
-        <p className="mb-6 text-lg text-gray-700">
+        <p className="mb-6 text-lg md:text-xl text-gray-700">
           Feel free to reach out via email or connect with me on LinkedIn!
         </p>
         <div className="space-y-4">

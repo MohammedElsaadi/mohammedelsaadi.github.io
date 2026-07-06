@@ -5,3 +5,54 @@ html, body {
   padding: 0;
   height: 100%;
 }
+
+@theme {
+  --color-lighter-emerald: #006045;
+  --color-darker-emerald: #004f3b;
+  --color-lighter-red: #60001B;
+  --color-darker-red: #4F0014;
+  --color-lighter-blue: #150060;
+  --color-darker-blue: #13004F;
+  --color-lighter-olive: #4B6000;
+  --color-darker-olive: #3B4F00;
+}
+
+@keyframes wind {
+  0% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 0.18;
+  }
+
+  85% {
+    opacity: 0.18;
+  }
+
+  100% {
+    transform: translateX(120vw);
+    opacity: 0;
+  }
+}
+
+@keyframes wind {
+  0% {
+    transform: translateX(-150%);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 0.14;
+  }
+
+  85% {
+    opacity: 0.14;
+  }
+
+  100% {
+    transform: translateX(150vw);
+    opacity: 0;
+  }
+}
