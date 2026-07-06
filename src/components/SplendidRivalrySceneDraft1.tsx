@@ -1,18 +1,16 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, RoundedBox, Box } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
-import { useFrame } from "@react-three/fiber";
+import { OrbitControls, Box } from "@react-three/drei";
 import { useState } from "react";
 import CameraDebugReader from "./CameraDebugReader";
 
-function Board() {
-  return (
-    <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
-      <planeGeometry args={[11.5, 9]} />
-      <meshStandardMaterial color="#2f5d50" />
-    </mesh>
-  );
-}
+// function Board() {
+//   return (
+//     <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
+//       <planeGeometry args={[11.5, 9]} />
+//       <meshStandardMaterial color="#2f5d50" />
+//     </mesh>
+//   );
+// }
 
 function BoardDyanmic({size, color, position}: {size: [number, number], color: string, position: [number, number, number]}) {
   return (
