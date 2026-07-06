@@ -1,5 +1,4 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { exp } from "three/tsl";
 
 type Props = {
   onUpdate: (pos: [number, number, number]) => void;

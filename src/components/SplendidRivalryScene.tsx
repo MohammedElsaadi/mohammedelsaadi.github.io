@@ -1,10 +1,7 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, RoundedBox, Box } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
-import { useFrame } from "@react-three/fiber";
+import { OrbitControls, Box } from "@react-three/drei";
 import { useState, useEffect} from "react";
 import CameraDebugReader from "./CameraDebugReader";
-import { CSS2DRenderer } from "three/examples/jsm/Addons.js";
 import { Html } from "@react-three/drei";
 
 const redColor = "#ef4444";
@@ -34,14 +31,14 @@ function useIsPortraitMobile() {
 }
 
 
-function Board() {
-  return (
-    <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
-      <planeGeometry args={[11.5, 9]} />
-      <meshStandardMaterial color="#2f5d50" />
-    </mesh>
-  );
-}
+// function Board() {
+//   return (
+//     <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
+//       <planeGeometry args={[11.5, 9]} />
+//       <meshStandardMaterial color="#2f5d50" />
+//     </mesh>
+//   );
+// }
 
 function BoardDyanmic({size, color, position}: {size: [number, number], color: string, position: [number, number, number]}) {
   return (
@@ -264,7 +261,7 @@ function GallerySlots() {
 export default function SplendidRivalryScene() {
       const [pos, setPos] = useState<[number, number, number]>([0, 0, 0]);
       const isPortraitMobile = useIsPortraitMobile();
-  const [transparencies, setTransparencies] = useState<{ [key: string]: number }>({
+  const [transparencies] = useState<{ [key: string]: number }>({
     cardBlack: 0.25,
     cardWhite: 0.25,
     cardRed: 0.25,
