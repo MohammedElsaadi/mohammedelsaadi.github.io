@@ -22,6 +22,7 @@ function BoardDyanmic({size, color, position}: {size: [number, number], color: s
   );
 }
 
+
 function Table() {
   return (
     <mesh receiveShadow position={[0, -0.52, 0]}>
