@@ -3,6 +3,7 @@ import About from '../components/About';
 import Projects from '../components/Projects';
 import Contact from '../components/Contact';
 import Resume from '../components/Resume';
+import { Murphy } from '../components/Murphy';
 
 function Home () {
   return (
@@ -12,6 +13,7 @@ function Home () {
       <Resume />
       <Projects />
       <Contact />
+      <Murphy/>
     </>
   );
 }
