@@ -1,9 +1,8 @@
 import Hero from '../components/Hero';
 import About from '../components/About';
 import Projects from '../components/Projects';
-import Contact from '../components/Contact';
-import Resume from '../components/Resume';
 import { Murphy } from '../components/Murphy';
+import ResumeContact from '../components/ResumeContact';
 
 function Home () {
   return (
@@ -14,9 +13,7 @@ function Home () {
       <div className="h-1 bg-black" />
       <Projects />
       <div className="h-1 bg-black" />
-      <Resume />
-      <div className="h-1 bg-black" />
-      <Contact />
+      <ResumeContact />
       <div className="h-1 bg-black" />
       <Murphy/>
     </>

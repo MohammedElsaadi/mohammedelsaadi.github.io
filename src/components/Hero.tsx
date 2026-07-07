@@ -53,25 +53,19 @@ I enjoy working across the stack, from designing clean user experiences to build
             </a>
             <a
               href="#projects"
-              className="px-5 py-2 bg-[var(--color-lighter-blue)] text-white rounded-lg font-semibold hover:bg-[var(--color-darker-blue)] transition"
+              className="px-5 py-2 bg-[var(--color-lighter-emerald)] text-white rounded-lg font-semibold hover:bg-[var(--color-darker-emerald)] transition"
             >
               Projects
             </a>
             <a
-              href="#resume"
-              className="px-5 py-2 bg-[var(--color-lighter-emerald)] text-white rounded-lg font-semibold hover:bg-[var(--color-darker-emerald)] transition"
-            >
-              Resume
-            </a>
-            <a
-              href="#contact"
+              href="#resume-contact"
               className="px-5 py-2 bg-[var(--color-lighter-red)] text-white rounded-lg font-semibold hover:bg-[var(--color-darker-red)] transition"
             >
-              Contact
+              Resume & Contact
             </a>
             <Link
               to="/games"
-              className="px-5 py-2 bg-[var(--color-lighter-blue)] text-white rounded-lg font-semibold hover:bg-[var(--color-darker-blue)] transition"
+              className="px-5 py-2 bg-[var(--color-lighter-emerald)] text-white rounded-lg font-semibold hover:bg-[var(--color-darker-emerald)] transition"
             >
               Games
             </Link>

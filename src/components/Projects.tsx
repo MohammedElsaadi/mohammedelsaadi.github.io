@@ -72,7 +72,7 @@ const projects = [
 
 export function Projects() {
   return (
-    <section id="projects" className="bg-gradient-to-b from-[var(--color-lighter-blue)] to-[var(--color-darker-blue)] py-20 px-4">
+    <section id="projects" className="bg-gradient-to-b from-[var(--color-lighter-emerald)] to-[var(--color-darker-emerald)] py-20 px-4">
       <div className="max-w-5xl mx-auto bg-white/80 rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
         <div className="mb-10">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Projects</h2>

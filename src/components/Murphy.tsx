@@ -11,7 +11,7 @@ export function Murphy() {
       className="lg:hidden py-10 px-4 bg-gradient-to-b from-[var(--color-lighter-emerald)] to-[var(--color-darker-emerald)]"
     >
       <div className="max-w-md mx-auto flex flex-col items-center text-center">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Also on the team...</h1>
+        <h1 className="text-2xl font-bold text-white mb-4">Also on the team...</h1>
         <button
           type="button"
           onClick={() => setShowMurphyHover((prev) => !prev)}
