@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Box } from "@react-three/drei";
-import { useState, useEffect} from "react";
+import { useState, useEffect, useRef} from "react";
 import CameraDebugReader from "./CameraDebugReader";
 import { Html } from "@react-three/drei";
 
@@ -259,8 +259,10 @@ function GallerySlots() {
 }
 
 export default function SplendidRivalryScene() {
-      const [pos, setPos] = useState<[number, number, number]>([0, 0, 0]);
-      const isPortraitMobile = useIsPortraitMobile();
+  const [pos, setPos] = useState<[number, number, number]>([0, 0, 0]);
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const isPortraitMobile = useIsPortraitMobile();
   const [transparencies] = useState<{ [key: string]: number }>({
     cardBlack: 0.25,
     cardWhite: 0.25,
@@ -269,12 +271,88 @@ export default function SplendidRivalryScene() {
     cardGreen: 0.25,
   });
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === sceneRef.current);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener(
+        "fullscreenchange",
+        handleFullscreenChange
+      );
+    };
+  }, []);
+
+  const toggleFullscreen = async () => {
+  try {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+    } else {
+      await sceneRef.current?.requestFullscreen();
+    }
+  } catch (error) {
+    console.error("Could not toggle fullscreen:", error);
+  }
+};
+
   return (
-    <div className="relative w-full h-screen">
+    <div ref={sceneRef} className="relative w-full h-screen">
+
+    <button
+  type="button"
+  onClick={toggleFullscreen}
+  aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+  title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+  className="
+    absolute top-4 right-4 z-[60]
+    flex h-11 w-11 items-center justify-center
+    rounded-lg bg-black/70 text-white
+    backdrop-blur-sm transition
+    hover:bg-black/90
+    focus:outline-none focus:ring-2 focus:ring-white
+  "
+>
+  {isFullscreen ? (
+    // Minimize icon
+    <svg
+      viewBox="0 0 24 24"
+      className="h-6 w-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M8 3v5H3" />
+      <path d="M16 3v5h5" />
+      <path d="M8 21v-5H3" />
+      <path d="M16 21v-5h5" />
+    </svg>
+  ) : (
+    // Maximize icon
+    <svg
+      viewBox="0 0 24 24"
+      className="h-6 w-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M8 3H3v5" />
+      <path d="M16 3h5v5" />
+      <path d="M8 21H3v-5" />
+      <path d="M16 21h5v-5" />
+    </svg>
+  )}
+</button>
 
     <Canvas
       shadows
-      camera={{ position: [0, 7.15, 8.8], fov: 45 }}
+      camera={{ position: [0, 12.5, 3], fov: 45 }}
       dpr={[1, 1.5]}
     >
                 <CameraDebugReader onUpdate={setPos} />

@@ -25,7 +25,7 @@ export function Hero() {
             className="
               bg-white/90
               rounded-xl shadow-xl
-              px-4 py-5 md:px-8 md:py-10 mt-8 md:mt-0
+              px-4 py-5 md:px-8 md:py-10 mt-8 mb-4 md:mt-0
               flex flex-col items-center md:items-start text-center md:text-left
               z-20
               absolute bottom-10 lg:bottom-auto lg:top-32 lg:left-[-200px]
