@@ -3,6 +3,8 @@ import { OrbitControls, Box } from "@react-three/drei";
 import { useState, useEffect, useRef} from "react";
 import CameraDebugReader from "./CameraDebugReader";
 import { Html } from "@react-three/drei";
+import * as THREE from "three";
+
 
 const redColor = "#ef4444";
 const blueColor = "#3b82f6";
@@ -64,17 +66,20 @@ function Card({
   onClick,
   size = [0.8, 0.01, 1.2],
   opacity = 0.25,
+  rotation = [0, 0, 0],
 }: {
   position: [number, number, number];
   color?: string;
   onClick?: () => void;
   size?: [number, number, number];
   opacity?: number;
+  rotation?: [number, number, number];
 }) {
   return (
     <Box
       args={size}
       position={position}
+      rotation={rotation}
       // castShadow
       onClick={onClick}
     >
@@ -94,18 +99,16 @@ function GemBoard({
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j < 5; j++) {
         slots.push(
-          <>
           <Box
             key={`${i}-${j}`}
-            position={[i * 0.625 - 5.25, 0.05, j * 0.625 - 2]}
-            args={[0.5, 0.02, 0.5]}
+            position={[i * 0.75 - 5.25, 0.05, j * 0.75 - 1.25]}
+            args={[0.625, 0.02, 0.625]}
           >
             <meshStandardMaterial color={color} />
             <Html position={[0, 0.02, 0]} center>
               <div>{i},{j}</div>
             </Html>
           </Box>
-          </>
         );
       }
     }
@@ -118,6 +121,8 @@ function GemBoard({
     </>
   )
 }
+
+
 
 function Coin({
   position,
@@ -196,65 +201,94 @@ function UI_Pocket({color, count, shape}: {color: string, count: number, shape?:
   )
 };
 
+function ScrollSlots() {
+    const cardSlotBasePositionX = -1.75;
+    const cardSlotBasePositionZ = -2;
+  const cardSlotHorizontalSpacing = 1.0;
+  return (
+    <>
+      <Scroll position={[cardSlotBasePositionX - cardSlotHorizontalSpacing * 0.9, 0.05, cardSlotBasePositionZ]} color="#fad5a4"/>
+      <Scroll position={[cardSlotBasePositionX - cardSlotHorizontalSpacing * 2, 0.05, cardSlotBasePositionZ]} color="#fad5a4"/>
+      <Scroll position={[cardSlotBasePositionX - cardSlotHorizontalSpacing * 3.1, 0.05, cardSlotBasePositionZ]} color="#fad5a4"/>
+    </>
+  )
+}
+
 function playerWalletSlots(transparencies: { [key: string]: number }){
+
+  const cardSlotBasePositionX = -1.825;
+  const cardSlotBasePositionZ = 3.25;
+  const cardSlotHorizontalSpacing = 1.0;
+  const cardSlotHorizontalSpacingAlt = 1.4;
+
   return (
     <>
 
       {/* Card slots */}
-      <Card position={[-1.875, 0.05, 3.125]} color="#000000" opacity={transparencies.cardBlack} />
-      <Card position={[-0.875, 0.05, 3.125]} color="#f8fafc" opacity={transparencies.cardWhite} />
-      <Card position={[0.125, 0.05, 3.125]} color="#ef4444" opacity={transparencies.cardRed} />
-      <Card position={[1.125, 0.05, 3.125]} color="#3b82f6" opacity={transparencies.cardBlue} />
-      <Card position={[2.125, 0.05, 3.125]} color="#22c55e" opacity={transparencies.cardGreen} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 0.5, 0.05, cardSlotBasePositionZ]} color="#000000" opacity={transparencies.cardBlack} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 1.5, 0.05, cardSlotBasePositionZ]} color="#f8fafc" opacity={transparencies.cardWhite} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 2.5, 0.05, cardSlotBasePositionZ]} color="#ef4444" opacity={transparencies.cardRed} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 3.5, 0.05, cardSlotBasePositionZ]} color="#3b82f6" opacity={transparencies.cardBlue} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 4.5, 0.05, cardSlotBasePositionZ]} color="#22c55e" opacity={transparencies.cardGreen} />
 
       {/* Coin slots */}
-      <Coin position={[-1.875, 0.08, 4.1]} color="#000000" shape="triangle"/>
-      <Coin position={[-0.875, 0.08, 4.1]} color="#f8fafc" shape="square"/>
-      <Coin position={[0.125, 0.08, 4.1]} color="#ef4444" shape="pentagon"/>
-      <Coin position={[1.125, 0.08, 4.1]} color="#3b82f6" shape="hexagon"/>
-      <Coin position={[2.125, 0.08, 4.1]} color="#22c55e" shape="octagon"/>
-      <Coin position={[3.125, 0.08, 3.125]} color="#f086af" shape="ring1"/>
-      <Coin position={[3.125, 0.08, 4.1]} color="#f7c335" shape="ring2"/>
+      <Coin position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 0.5, 0.08, cardSlotBasePositionZ + 0.975]} color="#000000" shape="triangle"/>
+      <Coin position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 1.5, 0.08, cardSlotBasePositionZ + 0.975]} color="#f8fafc" shape="square"/>
+      <Coin position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 2.5, 0.08, cardSlotBasePositionZ + 0.975]} color="#ef4444" shape="pentagon"/>
+      <Coin position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 3.5, 0.08, cardSlotBasePositionZ + 0.975]} color="#3b82f6" shape="hexagon"/>
+      <Coin position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 4.5, 0.08, cardSlotBasePositionZ + 0.975]} color="#22c55e" shape="octagon"/>
+      <Coin position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 5.5, 0.08, cardSlotBasePositionZ]} color="#f086af" shape="ring1"/>
+      <Coin position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 5.5, 0.08, cardSlotBasePositionZ + 0.975]} color="#f7c335" shape="ring2"/>
 
       {/* Scroll slots */}
-      <Scroll position={[4.5,0.08, 4.1]} color="#fad5a4"/>
-      <Scroll position={[4.5,0.08, 3.525]} color="#fad5a4"/>
-      <Scroll position={[4.5,0.08, 2.95]} color="#fad5a4"/>
+      <Scroll position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.75,0.08, cardSlotBasePositionZ + 0.975]} color="#fad5a4"/>
+      <Scroll position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.75,0.08, cardSlotBasePositionZ + 0.4]} color="#fad5a4"/>
+      <Scroll position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.75,0.08, cardSlotBasePositionZ - 0.175]} color="#fad5a4"/>
 
       {/* Reserve Slots */}
-      <Card position={[-5.15, 0.05, 3.5]} size={[0.8, 0.01, 1.2]} />
-      <Card position={[-4.15, 0.05, 3.5]} size={[0.8, 0.01, 1.2]} />
-      <Card position={[-3.15, 0.05, 3.5]} size={[0.8, 0.01, 1.2]} />
+      <Card position={[cardSlotBasePositionX - cardSlotHorizontalSpacingAlt * 0.625, 0.05, cardSlotBasePositionZ + 0.25]} rotation={[0, Math.PI / 8, 0]} />
+      <Card position={[cardSlotBasePositionX - cardSlotHorizontalSpacingAlt * 1.375, 0.05, cardSlotBasePositionZ + 0.25]} rotation={[0, Math.PI / 8, 0]} />
+      <Card position={[cardSlotBasePositionX - cardSlotHorizontalSpacingAlt * 2.125, 0.05, cardSlotBasePositionZ + 0.25]} rotation={[0, Math.PI / 8, 0]} />
     </>
   )
 }
 
 function GallerySlots() {
+  const cardSlotBasePositionX = -1.325;
+  const cardSlotBasePositionZ = -1.25;
+  const cardSlotBasePositionY = 0.05;
+  const cardSlotHorizontalSpacing = 1.0;
+  const cardSlotVerticalSpacing = 1.375;
+  
   return (
-    <>      <Card position={[-0.375, 0.05, 1.5]} />
-      <Card position={[0.625, 0.05, 1.5]} />
-      <Card position={[1.625, 0.05, 1.5]} />
-      <Card position={[2.625, 0.05, 1.5]} />
-      <Card position={[3.625, 0.05, 1.5]} />
+    <>     
+    //bottom row of 5 
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 1, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 2, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 3, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 4, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} />
 
-      <Card position={[3.125, 0.05, 0.125]} />
-      <Card position={[2.125, 0.05, 0.125]} />
-      <Card position={[1.125, 0.05, 0.125]} />
-      <Card position={[0.125, 0.05, 0.125]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 1.5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 2.5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 3.5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 4.5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing]} />
 
-      <Card position={[1.625, 0.05, -1.25]} />
-      <Card position={[2.625, 0.05, -1.25]} />
-      <Card position={[0.625, 0.05, -1.25]} />
+      
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 2, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 0]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 3, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 0]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 4, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 0]} />
 
-      <Card position={[4.85, 0.05, -1.5]} size={[1.2, 0.01, 0.8]} />
-      <Card position={[4.85, 0.05, -0.5]} size={[1.2, 0.01, 0.8]}/>
-      <Card position={[4.85, 0.05, 0.5]} size={[1.2, 0.01, 0.8]} />
-      <Card position={[4.85, 0.05, 1.5]} size={[1.2, 0.01, 0.8]} />
+    //royals
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.25, 0.05, -1.45]} size={[1.2, 0.01, 0.8]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.25, 0.05, -0.4]} size={[1.2, 0.01, 0.8]}/>
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.25, 0.05, 0.65]} size={[1.2, 0.01, 0.8]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.25, 0.05, 1.7]} size={[1.2, 0.01, 0.8]} />
 
-
-      <Card position={[-1.375, 0.05, -1.25]} />
-      <Card position={[-1.375, 0.05, 0.125]} />
-      <Card position={[-1.375, 0.05, 1.5]} /></>
+    //deck slots
+      <Card position={[cardSlotBasePositionX, cardSlotBasePositionY, cardSlotBasePositionZ]} />
+      <Card position={[cardSlotBasePositionX, cardSlotBasePositionY, cardSlotBasePositionZ+cardSlotVerticalSpacing]} />
+      <Card position={[cardSlotBasePositionX, cardSlotBasePositionY, cardSlotBasePositionZ+cardSlotVerticalSpacing*2]} /></>
   )
 }
 
@@ -351,7 +385,9 @@ export default function SplendidRivalryScene() {
 </button>
 
     <Canvas
-      shadows
+      shadows={{
+    type: THREE.PCFShadowMap,
+  }}
       camera={{ position: [0, 12.5, 3], fov: 45 }}
       dpr={[1, 1.5]}
     >
@@ -383,13 +419,20 @@ export default function SplendidRivalryScene() {
       {playerWalletSlots(transparencies)}
 
       <GemBoard color="#afafaf" />
+      <ScrollSlots />
 
       <OrbitControls
-        enablePan={true}
-        minDistance={6}
-        maxDistance={40}
-        maxPolarAngle={Math.PI / 2.15}
-        target={[0, 0, 0]}
+        enablePan={false}
+        minDistance={10.5}
+        maxDistance={12}
+        // Vertical rotation
+        minPolarAngle={Math.PI / 8}
+        maxPolarAngle={Math.PI / 3}
+
+        // Horizontal rotation
+        minAzimuthAngle={-Math.PI / 6}
+        maxAzimuthAngle={Math.PI / 6}
+        target={[0, 0, 1]}
       />
     </Canvas>
 

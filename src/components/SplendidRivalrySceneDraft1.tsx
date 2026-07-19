@@ -2,6 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Box } from "@react-three/drei";
 import { useState } from "react";
 import CameraDebugReader from "./CameraDebugReader";
+import * as THREE from "three";
 
 // function Board() {
 //   return (
@@ -96,7 +97,9 @@ export default function SplendidRivalrySceneDraft1() {
     <div className="relative w-full h-screen">
 
     <Canvas
-      shadows
+        shadows={{
+    type: THREE.PCFShadowMap,
+  }}
       camera={{ position: [0, 8, 8.5], fov: 45 }}
       dpr={[1, 1.5]}
     >
