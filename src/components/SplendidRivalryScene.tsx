@@ -426,12 +426,12 @@ export default function SplendidRivalryScene() {
         minDistance={10.5}
         maxDistance={12}
         // Vertical rotation
-        minPolarAngle={Math.PI / 8}
-        maxPolarAngle={Math.PI / 3}
+        minPolarAngle={Math.PI / 6}
+        maxPolarAngle={Math.PI / 4}
 
         // Horizontal rotation
-        minAzimuthAngle={-Math.PI / 6}
-        maxAzimuthAngle={Math.PI / 6}
+        minAzimuthAngle={0}
+        maxAzimuthAngle={0}
         target={[0, 0, 1]}
       />
     </Canvas>
