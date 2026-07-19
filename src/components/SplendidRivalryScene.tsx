@@ -93,33 +93,91 @@ function GemBoard({
 }: {
   color?: string;
 }) {
+  const gridSize = 5;
+  const spacing = 0.75;
 
-  const generateGemSlots = () => {
-    const slots = [];
-    for (let i = 0; i < 5; i++) {
-      for (let j = 0; j < 5; j++) {
-        slots.push(
-          <Box
-            key={`${i}-${j}`}
-            position={[i * 0.75 - 5.25, 0.05, j * 0.75 - 1.25]}
-            args={[0.625, 0.02, 0.625]}
-          >
-            <meshStandardMaterial color={color} />
-            <Html position={[0, 0.02, 0]} center>
-              <div>{i},{j}</div>
-            </Html>
-          </Box>
-        );
+  // Centre of your original 5×5 grid
+  const centerX = -3.75;
+  const centerZ = 0.25;
+
+  const generateSpiralCoordinates = (
+    count: number
+  ): Array<[number, number]> => {
+    const coordinates: Array<[number, number]> = [[0, 0]];
+
+    let x = 0;
+    let z = 0;
+    let stepLength = 1;
+
+    while (coordinates.length < count) {
+      // Right
+      for (let step = 0; step < stepLength; step++) {
+        x++;
+
+        if (coordinates.length < count) {
+          coordinates.push([x, z]);
+        }
       }
+
+      // Down / positive Z
+      for (let step = 0; step < stepLength; step++) {
+        z++;
+
+        if (coordinates.length < count) {
+          coordinates.push([x, z]);
+        }
+      }
+
+      stepLength++;
+
+      // Left
+      for (let step = 0; step < stepLength; step++) {
+        x--;
+
+        if (coordinates.length < count) {
+          coordinates.push([x, z]);
+        }
+      }
+
+      // Up / negative Z
+      for (let step = 0; step < stepLength; step++) {
+        z--;
+
+        if (coordinates.length < count) {
+          coordinates.push([x, z]);
+        }
+      }
+
+      stepLength++;
     }
-    return slots;
-  }
+
+    return coordinates;
+  };
+
+  const coordinates = generateSpiralCoordinates(gridSize * gridSize);
 
   return (
     <>
-    {generateGemSlots()}
+      {coordinates.map(([gridX, gridZ], index) => (
+        <Box
+          key={`${gridX}-${gridZ}`}
+          position={[
+            centerX + gridX * spacing,
+            0.05,
+            centerZ + gridZ * spacing,
+          ]}
+          args={[0.625, 0.02, 0.625]}
+        >
+          <meshStandardMaterial color={color} />
+
+          <Html position={[0, 0.02, 0]} center>
+            <p>{gridX},{gridZ}</p>
+            <p>{index}</p>
+          </Html>
+        </Box>
+      ))}
     </>
-  )
+  );
 }
 
 
