@@ -54,7 +54,7 @@ function BoardDyanmic({size, color, position}: {size: [number, number], color: s
 function Table() {
   return (
     <mesh receiveShadow position={[0, -0.52, 0]}>
-      <boxGeometry args={[12, 1, 9.5]} />
+      <boxGeometry args={[13.5, 1, 9.5]} />
       <meshStandardMaterial color="#5b3a29" />
     </mesh>
   );
@@ -63,27 +63,46 @@ function Table() {
 function Card({
   position,
   color = "#9e9886",
-  onClick,
   size = [0.8, 0.01, 1.2],
   opacity = 0.25,
   rotation = [0, 0, 0],
+  type,
 }: {
   position: [number, number, number];
   color?: string;
-  onClick?: () => void;
   size?: [number, number, number];
   opacity?: number;
   rotation?: [number, number, number];
+  type?: string;
 }) {
+
+  function onCardClick() {
+    console.log(`${type || "Card"} clicked at position:`, position);
+  }
   return (
     <Box
       args={size}
       position={position}
       rotation={rotation}
-      // castShadow
-      onClick={onClick}
+      onClick={onCardClick}
     >
       <meshStandardMaterial color={color} opacity={opacity} transparent />
+    </Box>
+  );
+}
+
+function GemBoardClickBox() {
+  const centerX = -4.125;
+  const centerZ = 0.125;
+  return (
+    <Box
+      position={[centerX, 0.06, centerZ]}
+      args={[5 * 0.875, 0.02, 5 * 0.875]}
+      onClick={() => {
+        console.log("Gem board clicked");
+      }}
+    >
+      <meshStandardMaterial color="#000000" opacity={0.2} transparent />
     </Box>
   );
 }
@@ -94,11 +113,10 @@ function GemBoard({
   color?: string;
 }) {
   const gridSize = 5;
-  const spacing = 0.75;
+  const spacing = 0.875;
 
-  // Centre of your original 5×5 grid
-  const centerX = -3.75;
-  const centerZ = 0.25;
+  const centerX = -4.125;
+  const centerZ = 0.125;
 
   const generateSpiralCoordinates = (
     count: number
@@ -166,7 +184,7 @@ function GemBoard({
             0.05,
             centerZ + gridZ * spacing,
           ]}
-          args={[0.625, 0.02, 0.625]}
+          args={[0.75, 0.02, 0.75]}
         >
           <meshStandardMaterial color={color} />
 
@@ -235,7 +253,7 @@ function Scroll({
   color: string;
 }) {
   return (
-    <mesh position={position} rotation={[Math.PI/2, 0, Math.PI/2]} castShadow>
+    <mesh position={position} rotation={[Math.PI/2, 0, -Math.PI/6]} castShadow>
       <cylinderGeometry args={[0.075, 0.075, 0.5, 24]} />
       <meshStandardMaterial color={color} metalness={0.6} roughness={0.35} />
     </mesh>
@@ -261,13 +279,13 @@ function UI_Pocket({color, count, shape}: {color: string, count: number, shape?:
 
 function ScrollSlots() {
     const cardSlotBasePositionX = -1.75;
-    const cardSlotBasePositionZ = -2;
+    const cardSlotBasePositionZ = 1.5;
   const cardSlotHorizontalSpacing = 1.0;
   return (
     <>
-      <Scroll position={[cardSlotBasePositionX - cardSlotHorizontalSpacing * 0.9, 0.05, cardSlotBasePositionZ]} color="#fad5a4"/>
-      <Scroll position={[cardSlotBasePositionX - cardSlotHorizontalSpacing * 2, 0.05, cardSlotBasePositionZ]} color="#fad5a4"/>
-      <Scroll position={[cardSlotBasePositionX - cardSlotHorizontalSpacing * 3.1, 0.05, cardSlotBasePositionZ]} color="#fad5a4"/>
+      <Scroll position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.5, 0.05, cardSlotBasePositionZ]} color="#fad5a4"/>
+      <Scroll position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 7, 0.05, cardSlotBasePositionZ]} color="#fad5a4"/>
+      <Scroll position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 7.5, 0.05, cardSlotBasePositionZ]} color="#fad5a4"/>
     </>
   )
 }
@@ -299,14 +317,14 @@ function playerWalletSlots(transparencies: { [key: string]: number }){
       <Coin position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 5.5, 0.08, cardSlotBasePositionZ + 0.975]} color="#f7c335" shape="ring2"/>
 
       {/* Scroll slots */}
-      <Scroll position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.75,0.08, cardSlotBasePositionZ + 0.975]} color="#fad5a4"/>
-      <Scroll position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.75,0.08, cardSlotBasePositionZ + 0.4]} color="#fad5a4"/>
-      <Scroll position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.75,0.08, cardSlotBasePositionZ - 0.175]} color="#fad5a4"/>
+      <Scroll position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.75, 0.08, cardSlotBasePositionZ + 0.975]} color="#fad5a4"/>
+      <Scroll position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.75, 0.08, cardSlotBasePositionZ + 0.4]} color="#fad5a4"/>
+      <Scroll position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.75, 0.08, cardSlotBasePositionZ - 0.175]} color="#fad5a4"/>
 
       {/* Reserve Slots */}
-      <Card position={[cardSlotBasePositionX - cardSlotHorizontalSpacingAlt * 0.625, 0.05, cardSlotBasePositionZ + 0.25]} rotation={[0, Math.PI / 8, 0]} />
+      <Card position={[cardSlotBasePositionX - cardSlotHorizontalSpacingAlt * 0.5, 0.05, cardSlotBasePositionZ + 0.375]} rotation={[0, Math.PI / 8, 0]} />
       <Card position={[cardSlotBasePositionX - cardSlotHorizontalSpacingAlt * 1.375, 0.05, cardSlotBasePositionZ + 0.25]} rotation={[0, Math.PI / 8, 0]} />
-      <Card position={[cardSlotBasePositionX - cardSlotHorizontalSpacingAlt * 2.125, 0.05, cardSlotBasePositionZ + 0.25]} rotation={[0, Math.PI / 8, 0]} />
+      <Card position={[cardSlotBasePositionX - cardSlotHorizontalSpacingAlt * 2.25, 0.05, cardSlotBasePositionZ + 0.125]} rotation={[0, Math.PI / 8, 0]} />
     </>
   )
 }
@@ -321,32 +339,32 @@ function GallerySlots() {
   return (
     <>     
     //bottom row of 5 
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 1, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} />
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 2, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} />
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 3, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} />
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 4, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} />
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 1, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} type="tier1"/>
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 2, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} type="tier1"/>
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 3, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} type="tier1"/>
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 4, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} type="tier1"/>
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 2]} type="tier1"/>
 
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 1.5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing]} />
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 2.5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing]} />
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 3.5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing]} />
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 4.5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 1.5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing]} type="tier2"/>
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 2.5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing]} type="tier2"/>
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 3.5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing]} type="tier2"/>
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 4.5, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing]} type="tier2"/>
 
-      
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 2, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 0]} />
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 3, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 0]} />
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 4, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 0]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 2, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 0]} type="tier3"/>
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 3, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 0]} type="tier3"/>
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 4, cardSlotBasePositionY, cardSlotBasePositionZ + cardSlotVerticalSpacing * 0]} type="tier3"/>
 
     //royals
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.25, 0.05, -1.45]} size={[1.2, 0.01, 0.8]} />
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.25, 0.05, -0.4]} size={[1.2, 0.01, 0.8]}/>
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.25, 0.05, 0.65]} size={[1.2, 0.01, 0.8]} />
-      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6.25, 0.05, 1.7]} size={[1.2, 0.01, 0.8]} />
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6, 0.05, cardSlotBasePositionZ]} type="king"/>
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 7, 0.05, cardSlotBasePositionZ ]} type="queen"/>
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 6, 0.05, cardSlotBasePositionZ + cardSlotVerticalSpacing]} type="princess"/>
+      <Card position={[cardSlotBasePositionX + cardSlotHorizontalSpacing * 7, 0.05, cardSlotBasePositionZ + cardSlotVerticalSpacing]} type="prince"/>
 
     //deck slots
-      <Card position={[cardSlotBasePositionX, cardSlotBasePositionY, cardSlotBasePositionZ]} />
-      <Card position={[cardSlotBasePositionX, cardSlotBasePositionY, cardSlotBasePositionZ+cardSlotVerticalSpacing]} />
-      <Card position={[cardSlotBasePositionX, cardSlotBasePositionY, cardSlotBasePositionZ+cardSlotVerticalSpacing*2]} /></>
+      <Card position={[cardSlotBasePositionX, cardSlotBasePositionY, cardSlotBasePositionZ]} type="deck3"/>
+      <Card position={[cardSlotBasePositionX, cardSlotBasePositionY, cardSlotBasePositionZ+cardSlotVerticalSpacing]} type="deck2"/>
+      <Card position={[cardSlotBasePositionX, cardSlotBasePositionY, cardSlotBasePositionZ+cardSlotVerticalSpacing*2]} type="deck1"/>
+    </>
   )
 }
 
@@ -463,9 +481,9 @@ export default function SplendidRivalryScene() {
       />
 
       <Table />
-      <BoardDyanmic size={[11.5, 5]} color="#324b44" position={[0, -0.01, 0]} />
-      <BoardDyanmic size={[11.5, 2]} color="#1e463b" position={[0, -0.01, 3.5]} />
-      <BoardDyanmic size={[11.5, 2]} color="#b88c8c" position={[0, -0.01, -3.5]} />
+      <BoardDyanmic size={[13, 5]} color="#324b44" position={[0, -0.01, 0]} />
+      <BoardDyanmic size={[13, 2]} color="#1e463b" position={[0, -0.01, 3.5]} />
+      <BoardDyanmic size={[13, 2]} color="#b88c8c" position={[0, -0.01, -3.5]} />
 
 
 
@@ -477,6 +495,7 @@ export default function SplendidRivalryScene() {
       {playerWalletSlots(transparencies)}
 
       <GemBoard color="#afafaf" />
+      <GemBoardClickBox />
       <ScrollSlots />
 
       <OrbitControls
@@ -484,7 +503,7 @@ export default function SplendidRivalryScene() {
         minDistance={10.5}
         maxDistance={12}
         // Vertical rotation
-        minPolarAngle={Math.PI / 6}
+        minPolarAngle={Math.PI / 8}
         maxPolarAngle={Math.PI / 4}
 
         // Horizontal rotation
@@ -506,6 +525,7 @@ export default function SplendidRivalryScene() {
       )}
 
 
+{!isPortraitMobile && (
     <div className="absolute top-1/2 right-4 -translate-y-1/2 z-50 bg-black/20 text-white text-sm p-3 rounded">
         <div className="flex flex-col gap-1 top-1/2 left-0 transform">
               <UI_Pocket color={blackColor} count={0} shape="triangle"/>
@@ -517,13 +537,14 @@ export default function SplendidRivalryScene() {
               <UI_Pocket color={yellowColor} count={0} shape="ring2"/>
       </div>
     </div>
+)}
         
 
-    <div className="absolute bottom-4 left-4 z-50 bg-black/70 text-white text-sm p-3 rounded">
-        <div>x: {pos[0].toFixed(2)}</div>
-        <div>y: {pos[1].toFixed(2)}</div>
-        <div>z: {pos[2].toFixed(2)}</div>
-      </div>
+      {/* <div className="absolute bottom-4 left-4 z-50 bg-black/70 text-white text-sm p-3 rounded">
+          <div>x: {pos[0].toFixed(2)}</div>
+          <div>y: {pos[1].toFixed(2)}</div>
+          <div>z: {pos[2].toFixed(2)}</div>
+      </div> */}
     </div>
   );
 }
