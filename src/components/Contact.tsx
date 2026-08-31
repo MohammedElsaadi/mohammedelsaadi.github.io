@@ -2,8 +2,6 @@ import * as React from 'react';
 import { FiCopy, FiCheck, FiMail } from "react-icons/fi";
 import { FaLinkedin } from "react-icons/fa";
 
-export interface IContactProps {}
-
 export function Contact() {
   const email = "mohammedelsaadi@gmail.com";
   const [copied, setCopied] = React.useState(false);

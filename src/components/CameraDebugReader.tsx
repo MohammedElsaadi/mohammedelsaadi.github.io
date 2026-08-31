@@ -1,4 +1,5 @@
 import { useFrame, useThree } from "@react-three/fiber";
+import { useRef } from "react";
 
 type Props = {
   onUpdate: (pos: [number, number, number]) => void;
@@ -6,17 +7,17 @@ type Props = {
 
 function CameraDebugReader({ onUpdate }: Props) {
   const { camera } = useThree();
-  let last = 0;
+  const last = useRef(0);
 
   useFrame(() => {
     const now = performance.now();
-    if (now - last > 100) {
+    if (now - last.current > 100) {
       onUpdate([
         camera.position.x,
         camera.position.y,
         camera.position.z,
       ]);
-      last = now;
+      last.current = now;
     }
   });
 

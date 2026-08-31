@@ -1,7 +1,5 @@
 import resumePdf from "../assets/Mohammed-Elsaadi-Resume.pdf";
 
-export interface IResumeProps {}
-
 export function Resume() {
   return (
     <section id="resume" className="py-10 px-4 bg-gradient-to-b from-[var(--color-lighter-emerald)] to-[var(--color-darker-emerald)]">

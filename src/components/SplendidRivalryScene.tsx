@@ -369,7 +369,7 @@ function GallerySlots() {
 }
 
 export default function SplendidRivalryScene() {
-  const [pos, setPos] = useState<[number, number, number]>([0, 0, 0]);
+  const [, setPos] = useState<[number, number, number]>([0, 0, 0]);
   const sceneRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const isPortraitMobile = useIsPortraitMobile();

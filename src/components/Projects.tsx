@@ -1,5 +1,3 @@
-export interface IProjectsProps {}
-
 const projects = [
   {
     title: 'Sign Management Mobile Platform',
