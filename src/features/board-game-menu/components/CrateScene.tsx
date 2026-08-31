@@ -69,7 +69,7 @@ function SceneContents({
     }
 
     const time = clock.getElapsedTime()
-    const dance = Math.sin(time * 2.2)
+    const danceRotation = Math.sin(time * 2.2) * 0.16
     let shakeX = 0
     let shakeY = 0
     let shakeRotation = 0
@@ -83,9 +83,10 @@ function SceneContents({
       if (envelope === 0) impactElapsed.current = null
     }
 
-    assembly.current.position.x = dance * width * 0.018 + shakeX
-    assembly.current.position.y = Math.abs(dance) * height * 0.006 + shakeY
-    assembly.current.rotation.z = dance * 0.018 + shakeRotation
+    assembly.current.position.x = shakeX
+    assembly.current.position.y = shakeY
+    assembly.current.rotation.y = danceRotation
+    assembly.current.rotation.z = shakeRotation
   })
 
   return (
