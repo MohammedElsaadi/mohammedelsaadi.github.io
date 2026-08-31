@@ -4,10 +4,6 @@ export function editDraftKey(menuId: string) {
   return `board-game-menu:edit:${menuId}:v1`
 }
 
-export function editTokenKey(menuId: string) {
-  return `board-game-menu:edit-token:${menuId}:v1`
-}
-
 export function readStoredValue<T>(key: string): T | null {
   try {
     const value = window.localStorage.getItem(key)

@@ -18,10 +18,12 @@ export function ToteBundleCard({ name, imageUrl, games, selected, matches, onTog
     <article
       className={`bgm-tote-card${selected ? ' is-selected' : ''}${!matches ? ' is-filtered' : ''}`}
     >
+      <span className="bgm-game-card__selection">{selected ? 'Selected' : ''}</span>
       <button
         type="button"
         className="bgm-tote-card__toggle"
         aria-pressed={selected}
+        aria-label={`${selected ? 'Remove' : 'Add'} ${name}`}
         onClick={onToggle}
       >
         <span className="bgm-tote-card__eyebrow">One complete bundle</span>
@@ -29,10 +31,9 @@ export function ToteBundleCard({ name, imageUrl, games, selected, matches, onTog
           {imageUrl ? <img src={imageUrl} alt="" /> : <><span className="bgm-tote-card__handle" /><span className="bgm-tote-card__bag">TOTE</span></>}
         </span>
         <strong>{name}</strong>
-        <span className="bgm-tote-card__action">{selected ? 'Tote added' : 'Add the whole tote'}</span>
+        <span className="bgm-tote-card__action">Games inside:</span>
       </button>
       <div className="bgm-tote-card__contents">
-        <span>Games inside</span>
         <ul>
           {visibleGames.map((game) => <li key={game.id}>{game.name}</li>)}
         </ul>

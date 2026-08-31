@@ -90,7 +90,6 @@ export interface MenuMutationPayload {
 export interface MenuMutationResponse {
   saved: true
   menuId: string
-  editToken?: string
   notificationSent: boolean
 }
 
