@@ -17,21 +17,23 @@ interface CrateSceneProps {
 }
 
 const palette = ['#e46f4c', '#e7b64d', '#4d8d78', '#7988bc', '#a977a8']
+const TOTE_WIDTH = mmToScene(300)
+const TOTE_HEIGHT = mmToScene(350)
 
 function colorFor(id: string) {
   const index = [...id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % palette.length
   return palette[index]
 }
 
-function ToteMesh({ x, z, scale, imageUrl }: { x: number; z: number; scale: number; imageUrl: string | null }) {
+function ToteMesh({ x, z, depth, imageUrl }: { x: number; z: number; depth: number; imageUrl: string | null }) {
   return (
-    <group position={[x, scale * 0.62, z]}>
+    <group position={[x, TOTE_HEIGHT / 2, z]}>
       <mesh castShadow>
-        <boxGeometry args={[scale * 1.25, scale * 1.2, scale * 0.56]} />
+        <boxGeometry args={[TOTE_WIDTH, TOTE_HEIGHT, depth]} />
         {imageUrl ? <CoverMaterial url={imageUrl} fallbackColor="#d9794f" rotationDegrees={0} /> : <meshStandardMaterial color="#d9794f" roughness={0.9} />}
       </mesh>
-      <mesh position={[0, scale * 0.58, 0]} rotation={[0, 0, Math.PI]}>
-        <torusGeometry args={[scale * 0.38, scale * 0.065, 8, 28, Math.PI]} />
+      <mesh position={[0, TOTE_HEIGHT / 2, 0]} rotation={[0, 0, Math.PI]}>
+        <torusGeometry args={[TOTE_WIDTH * 0.304, TOTE_WIDTH * 0.052, 8, 28, Math.PI]} />
         <meshStandardMaterial color="#f2c48c" roughness={0.9} />
       </mesh>
     </group>
@@ -49,6 +51,7 @@ function SceneContents({
   const width = mmToScene(crate.innerWidthMm ?? 1)
   const height = mmToScene(crate.innerHeightMm ?? 1)
   const depth = mmToScene(crate.innerDepthMm ?? 1)
+  const toteDepth = Math.max(Math.min(width, depth) * 0.28, 0.8) * 0.56
   const wall = Math.max(Math.min(width, height, depth) * 0.018, 0.04)
   const assembly = useRef<THREE.Group>(null)
   const impactElapsed = useRef<number | null>(null)
@@ -176,9 +179,9 @@ function SceneContents({
 
         {toteSelected ? (
           <ToteMesh
-            x={width / 2 + Math.max(width * 0.28, 1.2)}
+            x={width / 2 + TOTE_WIDTH / 2 + Math.max(width * 0.08, 0.4)}
             z={depth * 0.12}
-            scale={Math.max(Math.min(width, depth) * 0.28, 0.8)}
+            depth={toteDepth}
             imageUrl={tote?.imageUrl ?? null}
           />
         ) : null}
@@ -208,7 +211,9 @@ export function CrateScene(props: CrateSceneProps) {
   const effectiveHeight = height + mmToScene(props.crate.heightToleranceMm)
   const depth = mmToScene(props.crate.innerDepthMm ?? 1)
   const maximum = Math.max(width, effectiveHeight, depth)
-  const horizontalExtent = props.toteSelected ? Math.max(width * 1.45, width + 2.4) : width
+  const horizontalExtent = props.toteSelected
+    ? width + TOTE_WIDTH + Math.max(width * 0.08, 0.4)
+    : width
   const overflowHeight = props.packing.overflow.reduce(
     (sum, item) => sum + mmToScene(item.dimensionsMm.height),
     0,
