@@ -5,6 +5,7 @@ import type {
   CatalogResponse,
   MenuMutationPayload,
   MenuMutationResponse,
+  MenuDateStatusResponse,
   SavedMenu,
   Tag,
 } from './types'
@@ -39,9 +40,11 @@ function jsonInit(method: string, body: unknown, headers?: HeadersInit): Request
 }
 
 export const boardGameApi = {
-  getCatalog: () => requestJson<CatalogResponse>('/api/board-game-menu/catalog'),
+  getCatalog: () => requestJson<CatalogResponse>('/api/board-game-menu/catalog', { cache: 'no-store' }),
   getMenu: (menuId: string) =>
     requestJson<SavedMenu>(`/api/board-game-menu/menus/${encodeURIComponent(menuId)}`),
+  findMenuByDate: (gameNightDate: string) =>
+    requestJson<MenuDateStatusResponse>(`/api/board-game-menu/menus?date=${encodeURIComponent(gameNightDate)}`),
   createMenu: (payload: MenuMutationPayload) =>
     requestJson<MenuMutationResponse>('/api/board-game-menu/menus', jsonInit('POST', payload)),
   updateMenu: (menuId: string, payload: MenuMutationPayload) =>
@@ -74,6 +77,20 @@ export const boardGameApi = {
     removeCover: (gameId: string) =>
       requestJson<{ removed: true }>(
         `/api/board-game-menu/admin/games/${encodeURIComponent(gameId)}/cover`,
+        { method: 'DELETE' },
+      ),
+    uploadSide: async (gameId: string, file: File) => {
+      const response = await fetch(
+        `/api/board-game-menu/admin/games/${encodeURIComponent(gameId)}/side`,
+        { method: 'PUT', headers: { 'Content-Type': file.type }, body: file },
+      )
+      const body = (await response.json().catch(() => ({}))) as { sideUrl?: string } & ApiErrorBody
+      if (!response.ok) throw new ApiRequestError(response.status, body)
+      return body
+    },
+    removeSide: (gameId: string) =>
+      requestJson<{ removed: true }>(
+        `/api/board-game-menu/admin/games/${encodeURIComponent(gameId)}/side`,
         { method: 'DELETE' },
       ),
     updateContainer: (container: CatalogContainer) =>

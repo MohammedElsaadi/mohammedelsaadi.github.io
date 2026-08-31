@@ -12,21 +12,31 @@ function BoardGameMenu() {
 
   useEffect(() => {
     let active = true
-    boardGameApi.getCatalog().then(
+    let loadedOnce = false
+    const loadCatalog = () => boardGameApi.getCatalog().then(
       (response) => {
-        if (active) setCatalog(response)
+        if (!active) return
+        loadedOnce = true
+        setCatalog(response)
+        setDevelopmentMode(false)
+        setError(false)
       },
       () => {
         if (!active) return
-        if (import.meta.env.DEV) {
+        if (import.meta.env.DEV && !loadedOnce) {
           setCatalog(developmentCatalog)
           setDevelopmentMode(true)
-        } else {
+        } else if (!loadedOnce) {
           setError(true)
         }
       },
     )
-    return () => { active = false }
+    void loadCatalog()
+    window.addEventListener('focus', loadCatalog)
+    return () => {
+      active = false
+      window.removeEventListener('focus', loadCatalog)
+    }
   }, [])
 
   if (error) {

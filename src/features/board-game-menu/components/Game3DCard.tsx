@@ -54,6 +54,7 @@ export function Game3DCard({ game, selected, matches, rejected, disabled, onTogg
         <PreviewBox
           dimensions={normalizedDimensions(game)}
           coverUrl={game.coverUrl}
+          sideUrl={game.sideUrl}
           coverRotationDegrees={game.coverRotationDegrees}
           color={gameColor(game.id)}
           dancing={selected}

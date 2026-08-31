@@ -77,7 +77,7 @@ async function normalizeGame(env: Env, body: Record<string, unknown>, existingCo
     course = null
   }
   if (container.slug === 'board-game-tote') {
-    selectable = false
+    selectable = itemType === 'game'
     alwaysPacked = false
     allowOverflow = false
   }
@@ -143,8 +143,9 @@ export async function updateGame(env: Env, gameId: string, body: Record<string, 
 export async function deleteGame(env: Env, gameId: string) {
   const reference = await env.BOARD_GAME_DB.prepare('SELECT COUNT(*) AS count FROM menu_items WHERE game_id = ?').bind(gameId).first<{ count: number }>()
   if ((reference?.count ?? 0) > 0) throw new HttpError(409, 'This game is part of a saved menu. Archive it instead.')
-  const game = await env.BOARD_GAME_DB.prepare('SELECT cover_image_key FROM games WHERE id = ?').bind(gameId).first<{ cover_image_key: string | null }>()
+  const game = await env.BOARD_GAME_DB.prepare('SELECT cover_image_key, side_image_key FROM games WHERE id = ?').bind(gameId).first<{ cover_image_key: string | null; side_image_key: string | null }>()
   if (!game) throw new HttpError(404, 'Game not found.')
   await env.BOARD_GAME_DB.prepare('DELETE FROM games WHERE id = ?').bind(gameId).run()
   if (game.cover_image_key) await env.BOARD_GAME_MEDIA.delete(game.cover_image_key)
+  if (game.side_image_key) await env.BOARD_GAME_MEDIA.delete(game.side_image_key)
 }

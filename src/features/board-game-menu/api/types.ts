@@ -18,6 +18,7 @@ export interface CatalogContainer {
   innerHeightMm: number | null
   innerDepthMm: number | null
   overflowLimit: number
+  heightToleranceMm: number
   isActive: boolean
   imageUrl: string | null
 }
@@ -43,6 +44,7 @@ export interface CatalogGame {
   complexity: number | null
   course: Course | null
   coverUrl: string | null
+  sideUrl: string | null
   coverRotationDegrees: 0 | 90 | 180 | 270
   status: GameStatus
   sortOrder: number
@@ -69,6 +71,7 @@ export interface SavedMenu {
   title: string
   selectedContainerIds: string[]
   selectedCrateGameIds: string[]
+  selectedToteGameIds: string[]
   containers: CatalogContainer[]
   items: SavedMenuItem[]
   createdAt: string
@@ -84,6 +87,7 @@ export interface AdminCatalogResponse {
 export interface MenuMutationPayload {
   gameNightDate: string
   selectedCrateGameIds: string[]
+  selectedToteGameIds: string[]
   selectedContainerIds: string[]
 }
 
@@ -91,6 +95,11 @@ export interface MenuMutationResponse {
   saved: true
   menuId: string
   notificationSent: boolean
+}
+
+export interface MenuDateStatusResponse {
+  exists: boolean
+  menuId: string | null
 }
 
 export interface ApiErrorBody {

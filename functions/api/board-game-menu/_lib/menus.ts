@@ -18,6 +18,7 @@ export function parseMenuPayload(body: Record<string, unknown>): MenuPayload {
   return {
     gameNightDate: requireDateOnly(body.gameNightDate),
     selectedCrateGameIds: stringIdArray(body.selectedCrateGameIds, 'Selected crate game IDs'),
+    selectedToteGameIds: stringIdArray(body.selectedToteGameIds ?? [], 'Selected tote game IDs'),
     selectedContainerIds: stringIdArray(body.selectedContainerIds, 'Selected container IDs', 4),
   }
 }
@@ -31,9 +32,10 @@ export async function resolveSelection(env: Env, payload: MenuPayload): Promise<
   if (payload.selectedContainerIds.some((id) => !validContainerIds.has(id))) throw new HttpError(400, 'An unknown container was selected.')
 
   const crateActive = payload.selectedCrateGameIds.length > 0
-  const toteActive = Boolean(tote && tote.is_active && payload.selectedContainerIds.includes(tote.id))
+  const toteActive = payload.selectedToteGameIds.length > 0
   if (!crateActive && !toteActive) throw new HttpError(400, 'Select at least one crate game or the Board Game Tote.')
   if (crateActive && (!mainCrate || !mainCrate.is_active)) throw new HttpError(409, 'The Main Crate is not available.')
+  if (toteActive && (!tote || !tote.is_active)) throw new HttpError(409, 'The Board Game Tote is not available.')
 
   const selectedRows = payload.selectedCrateGameIds.length === 0 ? [] : (
     await db.prepare(
@@ -47,9 +49,11 @@ export async function resolveSelection(env: Env, payload: MenuPayload): Promise<
       .bind(mainCrate?.id ?? '').all<{ id: string }>()
   ).results : []
   const toteRows = toteActive ? (
-    await db.prepare("SELECT id FROM games WHERE container_id = ? AND status = 'active' AND item_type = 'game' ORDER BY id")
-      .bind(tote?.id ?? '').all<{ id: string }>()
+    await db.prepare(
+      `SELECT id FROM games WHERE id IN (${payload.selectedToteGameIds.map(() => '?').join(',')}) AND status = 'active' AND selectable = 1 AND item_type = 'game' AND container_id = ? ORDER BY id`,
+    ).bind(...payload.selectedToteGameIds, tote?.id ?? '').all<{ id: string }>()
   ).results : []
+  if (toteRows.length !== payload.selectedToteGameIds.length) throw new HttpError(400, 'One or more selected tote games are unavailable.')
 
   const items: Array<{ id: string; source: InclusionSource }> = [
     ...selectedRows.map((row) => ({ id: row.id, source: 'selected' as const })),
@@ -65,6 +69,7 @@ export async function resolveSelection(env: Env, payload: MenuPayload): Promise<
     ],
     items,
     selectedCrateGameIds: selectedRows.map((row) => row.id).sort(),
+    selectedToteGameIds: toteRows.map((row) => row.id).sort(),
   }
 }
 
@@ -88,6 +93,12 @@ export async function createMenu(env: Env, payload: MenuPayload) {
     ...snapshotStatements(db, id, snapshot),
   ])
   return { id, snapshot }
+}
+
+export async function findMenuByDate(env: Env, gameNightDate: string) {
+  return env.BOARD_GAME_DB.prepare('SELECT id FROM menus WHERE game_night_date = ?')
+    .bind(gameNightDate)
+    .first<{ id: string }>()
 }
 
 export async function updateMenu(env: Env, menuId: string, payload: MenuPayload) {
@@ -127,6 +138,7 @@ export async function readMenu(env: Env, menuId: string) {
     title: menu.title,
     selectedContainerIds: containerIds,
     selectedCrateGameIds: itemLinks.results.filter((row) => row.inclusion_source === 'selected').map((row) => row.id),
+    selectedToteGameIds: itemLinks.results.filter((row) => row.inclusion_source === 'bundle_snapshot').map((row) => row.id),
     containers: catalog.containers.filter((container) => containerIds.includes(container.id)),
     items,
     createdAt: menu.created_at,

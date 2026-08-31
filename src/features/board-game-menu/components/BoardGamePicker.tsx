@@ -1,8 +1,8 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiRequestError, boardGameApi } from '../api/boardGameApi'
 import type { CatalogGame, CatalogResponse } from '../api/types'
-import { createAllFilters, matchesFilters, toteMatchesFilters } from '../filters/matchesFilters'
+import { createAllFilters, matchesFilters } from '../filters/matchesFilters'
 import { packCrate } from '../packing/packCrate'
 import type { CrateDimensions, PackingItem, PackingResult } from '../packing/types'
 import {
@@ -17,12 +17,12 @@ import { CratePanel } from './CratePanel'
 import { CatalogPreviewCanvas } from './CatalogPreviewCanvas'
 import { PrimaryFilterBar, SecondaryFilterBar } from './FilterBar'
 import { Game3DCard } from './Game3DCard'
-import { ToteBundleCard } from './ToteBundleCard'
 
 export interface PickerDraft {
   gameNightDate: string
   selectedCrateGameIds: string[]
-  isToteSelected: boolean
+  selectedToteGameIds: string[]
+  isToteSelected?: boolean
 }
 
 interface BoardGamePickerProps {
@@ -71,17 +71,24 @@ function createPacking(catalog: CatalogResponse, selectedIds: string[]): Packing
     heightMm: crate.innerHeightMm,
     depthMm: crate.innerDepthMm,
     overflowLimit: crate.overflowLimit,
+    heightToleranceMm: crate.heightToleranceMm,
   }
   return packCrate([...selected, ...required] as PackingItem[], crateDimensions)
 }
 
 function validStoredDraft(value: PickerDraft | null, catalog: CatalogResponse, fallback: PickerDraft): PickerDraft {
   if (!value) return fallback
-  const available = new Set(catalog.crateGames.map((game) => game.id))
+  const availableCrateGames = new Set(catalog.crateGames.map((game) => game.id))
+  const availableToteGames = new Set(catalog.toteGames.map((game) => game.id))
+  const selectedToteGameIds = Array.isArray(value.selectedToteGameIds)
+    ? value.selectedToteGameIds.filter((id) => availableToteGames.has(id))
+    : value.isToteSelected
+      ? [...availableToteGames]
+      : fallback.selectedToteGameIds
   return {
     gameNightDate: isValidDateOnly(value.gameNightDate) ? value.gameNightDate : fallback.gameNightDate,
-    selectedCrateGameIds: value.selectedCrateGameIds.filter((id) => available.has(id)),
-    isToteSelected: Boolean(value.isToteSelected),
+    selectedCrateGameIds: value.selectedCrateGameIds.filter((id) => availableCrateGames.has(id)),
+    selectedToteGameIds,
   }
 }
 
@@ -99,13 +106,13 @@ export function BoardGamePicker({
   const fallbackDraft: PickerDraft = initialDraft ?? {
     gameNightDate: todayDateOnly(),
     selectedCrateGameIds: [],
-    isToteSelected: false,
+    selectedToteGameIds: [],
   }
   const storedDraft = readStoredValue<PickerDraft>(storageKey)
   const startingDraft = validStoredDraft(storedDraft, catalog, fallbackDraft)
   const [gameNightDate, setGameNightDate] = useState(startingDraft.gameNightDate)
   const [selectedIds, setSelectedIds] = useState(startingDraft.selectedCrateGameIds)
-  const [toteSelected, setToteSelected] = useState(startingDraft.isToteSelected)
+  const [selectedToteIds, setSelectedToteIds] = useState(startingDraft.selectedToteGameIds)
   const [filters, setFilters] = useState(() => createAllFilters(catalog.tags))
   const [message, setMessage] = useState<string | null>(null)
   const [rejectedId, setRejectedId] = useState<string | null>(null)
@@ -116,23 +123,20 @@ export function BoardGamePicker({
 
   const crate = configuredCrate(catalog)
   const tote = catalog.containers.find((container) => container.slug === 'board-game-tote')
+  const toteSelected = selectedToteIds.length > 0
   const packing = useMemo(() => createPacking(catalog, selectedIds), [catalog, selectedIds])
   const allSceneGames = useMemo(
     () => [...catalog.crateGames, ...catalog.requiredCrateItems],
     [catalog.crateGames, catalog.requiredCrateItems],
   )
-  const menuGameCount = selectedIds.length + (toteSelected ? catalog.toteGames.length : 0)
+  const menuGameCount = selectedIds.length + selectedToteIds.length
 
   const persistDraft = (next: PickerDraft) => writeStoredValue(storageKey, next)
   const updateDate = (date: string) => {
     setGameNightDate(date)
-    persistDraft({ gameNightDate: date, selectedCrateGameIds: selectedIds, isToteSelected: toteSelected })
-  }
-  const updateTote = () => {
-    const next = !toteSelected
-    setToteSelected(next)
+    setDuplicateMenuId(null)
     setMessage(null)
-    persistDraft({ gameNightDate, selectedCrateGameIds: selectedIds, isToteSelected: next })
+    persistDraft({ gameNightDate: date, selectedCrateGameIds: selectedIds, selectedToteGameIds: selectedToteIds })
   }
 
   const rejectSelection = (gameId: string, text: string) => {
@@ -143,12 +147,11 @@ export function BoardGamePicker({
   }
 
   const toggleGame = (game: CatalogGame) => {
-    setDuplicateMenuId(null)
     if (selectedIds.includes(game.id)) {
       const next = selectedIds.filter((id) => id !== game.id)
       setSelectedIds(next)
       setMessage(null)
-      persistDraft({ gameNightDate, selectedCrateGameIds: next, isToteSelected: toteSelected })
+      persistDraft({ gameNightDate, selectedCrateGameIds: next, selectedToteGameIds: selectedToteIds })
       return
     }
     const tentative = [...selectedIds, game.id]
@@ -164,20 +167,57 @@ export function BoardGamePicker({
     }
     setSelectedIds(tentative)
     setMessage(null)
-    persistDraft({ gameNightDate, selectedCrateGameIds: tentative, isToteSelected: toteSelected })
+    persistDraft({ gameNightDate, selectedCrateGameIds: tentative, selectedToteGameIds: selectedToteIds })
+  }
+
+  const toggleToteGame = (game: CatalogGame) => {
+    const next = selectedToteIds.includes(game.id)
+      ? selectedToteIds.filter((id) => id !== game.id)
+      : [...selectedToteIds, game.id]
+    setSelectedToteIds(next)
+    setMessage(null)
+    persistDraft({ gameNightDate, selectedCrateGameIds: selectedIds, selectedToteGameIds: next })
   }
 
   const clearSelection = () => {
-    if (selectedIds.length + Number(toteSelected) >= 3 && !window.confirm('Clear the current board-game menu draft?')) return
+    if (selectedIds.length + selectedToteIds.length >= 3 && !window.confirm('Clear the current board-game menu draft?')) return
     setSelectedIds([])
-    setToteSelected(false)
+    setSelectedToteIds([])
     setMessage(null)
-    persistDraft({ gameNightDate, selectedCrateGameIds: [], isToteSelected: false })
+    persistDraft({ gameNightDate, selectedCrateGameIds: [], selectedToteGameIds: [] })
   }
+
+  useEffect(() => {
+    if (mode !== 'create' || !isValidDateOnly(gameNightDate)) {
+      setDuplicateMenuId(null)
+      return
+    }
+
+    let active = true
+    const timer = window.setTimeout(() => {
+      boardGameApi.findMenuByDate(gameNightDate).then(
+        (result) => {
+          if (active) setDuplicateMenuId(result.exists ? result.menuId : null)
+        },
+        () => {
+          // Saving still performs the authoritative uniqueness check.
+        },
+      )
+    }, 250)
+
+    return () => {
+      active = false
+      window.clearTimeout(timer)
+    }
+  }, [gameNightDate, mode, selectedIds, selectedToteIds])
 
   const save = async () => {
     if (!isValidDateOnly(gameNightDate)) {
       setMessage('Choose a valid game-night date.')
+      return
+    }
+    if (mode === 'create' && duplicateMenuId) {
+      setMessage('Choose another date or edit the menu that is already saved for this game night.')
       return
     }
     if (!packing.success) {
@@ -189,9 +229,9 @@ export function BoardGamePicker({
     setDuplicateMenuId(null)
     const selectedContainerIds = [
       ...(selectedIds.length > 0 && crate ? [crate.id] : []),
-      ...(toteSelected && tote ? [tote.id] : []),
+      ...(selectedToteIds.length > 0 && tote ? [tote.id] : []),
     ]
-    const payload = { gameNightDate, selectedCrateGameIds: selectedIds, selectedContainerIds }
+    const payload = { gameNightDate, selectedCrateGameIds: selectedIds, selectedToteGameIds: selectedToteIds, selectedContainerIds }
     try {
       const result = mode === 'edit' && menuId
         ? await boardGameApi.updateMenu(menuId, payload)
@@ -236,9 +276,9 @@ export function BoardGamePicker({
           <div className="bgm-dev-banner">Previewing fictional development data. Run the full local stack to use D1.</div>
         ) : null}
         <PrimaryFilterBar filters={filters} setFilters={setFilters} tags={catalog.tags} />
-        {message ? (
+        {message || duplicateMenuId ? (
           <div className="bgm-message" role="status">
-            <span>{message}</span>
+            <span>{duplicateMenuId ? 'A Board Game Menu is already saved for this date.' : message}</span>
             {duplicateMenuId ? <Link to={`/games/board-game-menu/menu/${duplicateMenuId}`}>Open existing menu</Link> : null}
           </div>
         ) : null}
@@ -254,21 +294,21 @@ export function BoardGamePicker({
           toteSelected={toteSelected}
         />
         <section ref={browserRef} className="bgm-browser" aria-label="Board-game collection">
-          {catalog.crateGames.length > 0 ? <CatalogPreviewCanvas scrollRoot={browserRef} /> : null}
+          {catalog.crateGames.length + catalog.toteGames.length > 0 ? <CatalogPreviewCanvas scrollRoot={browserRef} /> : null}
           <div className="bgm-browser__filters">
             <SecondaryFilterBar filters={filters} setFilters={setFilters} tags={catalog.tags} />
           </div>
           <div className="bgm-game-grid">
-            {tote && catalog.toteGames.length > 0 ? (
-              <ToteBundleCard
-                name={tote.name}
-                imageUrl={tote.imageUrl}
-                games={catalog.toteGames}
-                selected={toteSelected}
-                matches={toteMatchesFilters(catalog.toteGames, filters)}
-                onToggle={updateTote}
+            {catalog.toteGames.map((game) => (
+              <Game3DCard
+                key={game.id}
+                game={game}
+                selected={selectedToteIds.includes(game.id)}
+                matches={matchesFilters(game, filters)}
+                rejected={false}
+                onToggle={() => toggleToteGame(game)}
               />
-            ) : null}
+            ))}
             {catalog.crateGames.map((game) => (
               <Game3DCard
                 key={game.id}
@@ -288,12 +328,12 @@ export function BoardGamePicker({
           <footer className="bgm-save-bar">
             <div>
               <strong>{menuGameCount} game{menuGameCount === 1 ? '' : 's'} on the menu</strong>
-              <span>{selectedIds.length} chosen box{selectedIds.length === 1 ? '' : 'es'}{toteSelected ? ` · ${catalog.toteGames.length} in the tote` : ''}</span>
+              <span>{selectedIds.length} crate box{selectedIds.length === 1 ? '' : 'es'}{selectedToteIds.length ? ` · ${selectedToteIds.length} in the tote` : ''}</span>
             </div>
-            <button type="button" className="bgm-secondary-button" onClick={clearSelection} disabled={selectedIds.length === 0 && !toteSelected}>Clear</button>
+            <button type="button" className="bgm-secondary-button" onClick={clearSelection} disabled={selectedIds.length === 0 && selectedToteIds.length === 0}>Clear</button>
             {mode === 'edit' ? <button type="button" className="bgm-secondary-button" onClick={onCancel}>Cancel</button> : null}
-            <button type="button" className="bgm-primary-button" onClick={save} disabled={saving || (selectedIds.length === 0 && !toteSelected)}>
-              {saving ? 'Saving…' : mode === 'edit' ? 'Save Changes' : 'Save Board Game Menu'}
+            <button type="button" className="bgm-primary-button" onClick={save} disabled={saving || (selectedIds.length === 0 && selectedToteIds.length === 0) || (mode === 'create' && Boolean(duplicateMenuId))}>
+              {saving ? 'Saving…' : mode === 'edit' ? 'Save Changes' : duplicateMenuId ? 'Menu Already Saved' : 'Save Board Game Menu'}
             </button>
           </footer>
         </section>

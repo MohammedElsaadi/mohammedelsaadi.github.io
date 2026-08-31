@@ -18,6 +18,7 @@ describe('public menu edits', () => {
     await boardGameApi.updateMenu('menu-1', {
       gameNightDate: '2026-09-05',
       selectedCrateGameIds: ['game-1'],
+      selectedToteGameIds: [],
       selectedContainerIds: ['crate-1'],
     })
 

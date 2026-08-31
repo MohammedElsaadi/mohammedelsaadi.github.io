@@ -1,11 +1,12 @@
 import { onRequestGet as getCatalog } from '../functions/api/board-game-menu/catalog'
 import { onRequestGet as getMedia } from '../functions/api/board-game-menu/media/[[path]]'
-import { onRequestPost as createMenu } from '../functions/api/board-game-menu/menus/index'
+import { onRequestGet as findMenuByDate, onRequestPost as createMenu } from '../functions/api/board-game-menu/menus/index'
 import { onRequestGet as getMenu, onRequestPut as updateMenu } from '../functions/api/board-game-menu/menus/[menuId]'
 import { onRequestPut as updateContainer } from '../functions/api/board-game-menu/admin/containers/[containerId]'
 import { onRequestDelete as deleteContainerImage, onRequestPut as uploadContainerImage } from '../functions/api/board-game-menu/admin/containers/[containerId]/image'
 import { onRequestDelete as deleteGame, onRequestPut as updateGame } from '../functions/api/board-game-menu/admin/games/[gameId]'
 import { onRequestDelete as deleteCover, onRequestPut as uploadCover } from '../functions/api/board-game-menu/admin/games/[gameId]/cover'
+import { onRequestDelete as deleteSide, onRequestPut as uploadSide } from '../functions/api/board-game-menu/admin/games/[gameId]/side'
 import { onRequestGet as getAdminCatalog, onRequestPost as createGame } from '../functions/api/board-game-menu/admin/games/index'
 import { onRequestDelete as deleteAdminMenu, onRequestGet as getAdminMenu, onRequestPut as updateAdminMenu } from '../functions/api/board-game-menu/admin/menus/[menuId]'
 import { onRequestGet as getAdminMenus } from '../functions/api/board-game-menu/admin/menus/index'
@@ -26,6 +27,7 @@ interface Route {
 const routes: Route[] = [
   { method: 'GET', pattern: /^\/api\/board-game-menu\/catalog\/?$/, parameterNames: [], handler: getCatalog },
   { method: 'GET', pattern: /^\/api\/board-game-menu\/media\/(.+)$/, parameterNames: [], wildcardParameter: 'path', handler: getMedia },
+  { method: 'GET', pattern: /^\/api\/board-game-menu\/menus\/?$/, parameterNames: [], handler: findMenuByDate },
   { method: 'POST', pattern: /^\/api\/board-game-menu\/menus\/?$/, parameterNames: [], handler: createMenu },
   { method: 'GET', pattern: /^\/api\/board-game-menu\/menus\/([^/]+)\/?$/, parameterNames: ['menuId'], handler: getMenu },
   { method: 'PUT', pattern: /^\/api\/board-game-menu\/menus\/([^/]+)\/?$/, parameterNames: ['menuId'], handler: updateMenu },
@@ -35,6 +37,8 @@ const routes: Route[] = [
   { method: 'DELETE', pattern: /^\/api\/board-game-menu\/admin\/games\/([^/]+)\/?$/, parameterNames: ['gameId'], handler: deleteGame },
   { method: 'PUT', pattern: /^\/api\/board-game-menu\/admin\/games\/([^/]+)\/cover\/?$/, parameterNames: ['gameId'], handler: uploadCover },
   { method: 'DELETE', pattern: /^\/api\/board-game-menu\/admin\/games\/([^/]+)\/cover\/?$/, parameterNames: ['gameId'], handler: deleteCover },
+  { method: 'PUT', pattern: /^\/api\/board-game-menu\/admin\/games\/([^/]+)\/side\/?$/, parameterNames: ['gameId'], handler: uploadSide },
+  { method: 'DELETE', pattern: /^\/api\/board-game-menu\/admin\/games\/([^/]+)\/side\/?$/, parameterNames: ['gameId'], handler: deleteSide },
   { method: 'PUT', pattern: /^\/api\/board-game-menu\/admin\/containers\/([^/]+)\/?$/, parameterNames: ['containerId'], handler: updateContainer },
   { method: 'PUT', pattern: /^\/api\/board-game-menu\/admin\/containers\/([^/]+)\/image\/?$/, parameterNames: ['containerId'], handler: uploadContainerImage },
   { method: 'DELETE', pattern: /^\/api\/board-game-menu\/admin\/containers\/([^/]+)\/image\/?$/, parameterNames: ['containerId'], handler: deleteContainerImage },

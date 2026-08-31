@@ -1,23 +1,25 @@
 import { Edges } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
+import type { AxisAlignedRotation } from '../packing/types'
+import { packedRotationQuaternion } from '../three/packedRotation'
 
-interface CoverMaterialProps {
-  url: string
-  fallbackColor: string
-  rotationDegrees: 0 | 90 | 180 | 270
-  muted?: boolean
-  opacity?: number
-}
+type ImageRotation = 0 | 90 | 180 | 270
 
-export function CoverMaterial({ url, fallbackColor, rotationDegrees, muted = false, opacity = 1 }: CoverMaterialProps) {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null)
+function useOwnedTexture(url: string | null, rotationDegrees: ImageRotation) {
+  const loadKey = url ? `${url}:${rotationDegrees}` : null
+  const [loaded, setLoaded] = useState<{ key: string; texture: THREE.Texture | null } | null>(null)
   const invalidate = useThree((state) => state.invalidate)
 
   useEffect(() => {
     let active = true
     let ownedTexture: THREE.Texture | null = null
+    if (!url) {
+      invalidate()
+      return () => { active = false }
+    }
+
     const loader = new THREE.TextureLoader()
     loader.load(
       url,
@@ -30,13 +32,13 @@ export function CoverMaterial({ url, fallbackColor, rotationDegrees, muted = fal
         loaded.colorSpace = THREE.SRGBColorSpace
         loaded.center.set(0.5, 0.5)
         loaded.rotation = THREE.MathUtils.degToRad(rotationDegrees)
-        setTexture(loaded)
+        setLoaded({ key: loadKey ?? url, texture: loaded })
         invalidate()
       },
       undefined,
       () => {
         if (active) {
-          setTexture(null)
+          setLoaded({ key: loadKey ?? url, texture: null })
           invalidate()
         }
       },
@@ -45,31 +47,75 @@ export function CoverMaterial({ url, fallbackColor, rotationDegrees, muted = fal
       active = false
       ownedTexture?.dispose()
     }
-  }, [invalidate, rotationDegrees, url])
+  }, [invalidate, loadKey, rotationDegrees, url])
 
+  return loaded?.key === loadKey ? loaded.texture : null
+}
+
+interface CoverMaterialProps {
+  url: string
+  fallbackColor: string
+  rotationDegrees: ImageRotation
+  muted?: boolean
+  opacity?: number
+}
+
+export function CoverMaterial({ url, fallbackColor, rotationDegrees, muted = false, opacity = 1 }: CoverMaterialProps) {
+  const texture = useOwnedTexture(url, rotationDegrees)
   return texture ? (
-    <meshBasicMaterial
-      map={texture}
-      color={muted ? '#a9a2a5' : '#ffffff'}
-      transparent={opacity < 1}
-      opacity={opacity}
-      depthWrite={opacity === 1}
-    />
+    <meshBasicMaterial map={texture} color={muted ? '#a9a2a5' : '#ffffff'} transparent={opacity < 1} opacity={opacity} depthWrite={opacity === 1} />
   ) : (
-    <meshStandardMaterial
-      color={muted ? '#918b8e' : fallbackColor}
-      roughness={0.76}
-      transparent={opacity < 1}
-      opacity={opacity}
-      depthWrite={opacity === 1}
-    />
+    <meshStandardMaterial color={muted ? '#918b8e' : fallbackColor} roughness={0.76} transparent={opacity < 1} opacity={opacity} depthWrite={opacity === 1} />
+  )
+}
+
+interface FaceMaterialProps {
+  attach: `material-${number}`
+  texture: THREE.Texture | null
+  fallbackColor: string
+  muted: boolean
+  opacity: number
+}
+
+function FaceMaterial({ attach, texture, fallbackColor, muted, opacity }: FaceMaterialProps) {
+  return texture ? (
+    <meshBasicMaterial attach={attach} map={texture} color={muted ? '#a9a2a5' : '#ffffff'} transparent={opacity < 1} opacity={opacity} depthWrite={opacity === 1} />
+  ) : (
+    <meshStandardMaterial attach={attach} color={muted ? '#918b8e' : fallbackColor} roughness={0.76} transparent={opacity < 1} opacity={opacity} depthWrite={opacity === 1} />
+  )
+}
+
+interface BoxMaterialsProps {
+  coverUrl: string | null
+  sideUrl: string | null
+  coverRotationDegrees: ImageRotation
+  color: string
+  muted?: boolean
+  opacity?: number
+}
+
+function BoxMaterials({ coverUrl, sideUrl, coverRotationDegrees, color, muted = false, opacity = 1 }: BoxMaterialsProps) {
+  const coverTexture = useOwnedTexture(coverUrl, coverRotationDegrees)
+  const sideTexture = useOwnedTexture(sideUrl, 0)
+  const nonTopTexture = sideTexture ?? coverTexture
+
+  return (
+    <>
+      <FaceMaterial attach="material-0" texture={nonTopTexture} fallbackColor={color} muted={muted} opacity={opacity} />
+      <FaceMaterial attach="material-1" texture={nonTopTexture} fallbackColor={color} muted={muted} opacity={opacity} />
+      <FaceMaterial attach="material-2" texture={coverTexture} fallbackColor={color} muted={muted} opacity={opacity} />
+      <FaceMaterial attach="material-3" texture={nonTopTexture} fallbackColor={color} muted={muted} opacity={opacity} />
+      <FaceMaterial attach="material-4" texture={nonTopTexture} fallbackColor={color} muted={muted} opacity={opacity} />
+      <FaceMaterial attach="material-5" texture={nonTopTexture} fallbackColor={color} muted={muted} opacity={opacity} />
+    </>
   )
 }
 
 interface PreviewBoxProps {
   dimensions: [number, number, number]
   coverUrl: string | null
-  coverRotationDegrees: 0 | 90 | 180 | 270
+  sideUrl: string | null
+  coverRotationDegrees: ImageRotation
   color: string
   dancing: boolean
   reducedMotion: boolean
@@ -77,16 +123,7 @@ interface PreviewBoxProps {
   opacity?: number
 }
 
-export function PreviewBox({
-  dimensions,
-  coverUrl,
-  coverRotationDegrees,
-  color,
-  dancing,
-  reducedMotion,
-  muted = false,
-  opacity = 1,
-}: PreviewBoxProps) {
+export function PreviewBox({ dimensions, coverUrl, sideUrl, coverRotationDegrees, color, dancing, reducedMotion, muted = false, opacity = 1 }: PreviewBoxProps) {
   const group = useRef<THREE.Group>(null)
   const danceTime = useRef(0)
   const invalidate = useThree((state) => state.invalidate)
@@ -116,23 +153,7 @@ export function PreviewBox({
     <group ref={group} rotation={[0.12, -0.5, 0]}>
       <mesh>
         <boxGeometry args={dimensions} />
-        {coverUrl ? (
-          <CoverMaterial
-            url={coverUrl}
-            fallbackColor={color}
-            rotationDegrees={coverRotationDegrees}
-            muted={muted}
-            opacity={opacity}
-          />
-        ) : (
-          <meshStandardMaterial
-            color={muted ? '#918b8e' : color}
-            roughness={0.76}
-            transparent={opacity < 1}
-            opacity={opacity}
-            depthWrite={opacity === 1}
-          />
-        )}
+        <BoxMaterials coverUrl={coverUrl} sideUrl={sideUrl} coverRotationDegrees={coverRotationDegrees} color={color} muted={muted} opacity={opacity} />
         <Edges color="#2a1a17" transparent opacity={0.5 * opacity} />
       </mesh>
     </group>
@@ -142,35 +163,24 @@ export function PreviewBox({
 interface PackedBoxProps {
   dimensions: [number, number, number]
   position: [number, number, number]
+  orientation: AxisAlignedRotation
   coverUrl: string | null
-  coverRotationDegrees: 0 | 90 | 180 | 270
+  sideUrl: string | null
+  coverRotationDegrees: ImageRotation
   color: string
   dropHeight: number
   reducedMotion: boolean
   onImpact: () => void
 }
 
-export function PackedBox({
-  dimensions,
-  position,
-  coverUrl,
-  coverRotationDegrees,
-  color,
-  dropHeight,
-  reducedMotion,
-  onImpact,
-}: PackedBoxProps) {
+export function PackedBox({ dimensions, position, orientation, coverUrl, sideUrl, coverRotationDegrees, color, dropHeight, reducedMotion, onImpact }: PackedBoxProps) {
   const group = useRef<THREE.Group>(null)
-  const [startPosition] = useState<[number, number, number]>(() => [
-    position[0],
-    position[1] + (reducedMotion ? 0 : dropHeight),
-    position[2],
-  ])
+  const quaternion = useMemo(() => packedRotationQuaternion(orientation), [orientation])
+  const [startPosition] = useState<[number, number, number]>(() => [position[0], position[1] + (reducedMotion ? 0 : dropHeight), position[2]])
   const dropping = useRef(!reducedMotion)
 
   useFrame((_, delta) => {
     if (!group.current) return
-
     if (reducedMotion) {
       group.current.position.set(...position)
       dropping.current = false
@@ -191,11 +201,13 @@ export function PackedBox({
 
   return (
     <group ref={group} position={startPosition}>
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={dimensions} />
-        {coverUrl ? <CoverMaterial url={coverUrl} fallbackColor={color} rotationDegrees={coverRotationDegrees} /> : <meshStandardMaterial color={color} roughness={0.72} />}
-        <Edges color="#160d0c" transparent opacity={0.62} />
-      </mesh>
+      <group quaternion={quaternion}>
+        <mesh castShadow receiveShadow>
+          <boxGeometry args={dimensions} />
+          <BoxMaterials coverUrl={coverUrl} sideUrl={sideUrl} coverRotationDegrees={coverRotationDegrees} color={color} />
+          <Edges color="#160d0c" transparent opacity={0.62} />
+        </mesh>
+      </group>
     </group>
   )
 }

@@ -13,7 +13,7 @@ describe('versioned local draft storage', () => {
         removeItem: (key: string) => values.delete(key),
       },
     })
-    const draft = { gameNightDate: '2026-09-04', selectedCrateGameIds: ['game-1'], isToteSelected: true }
+    const draft = { gameNightDate: '2026-09-04', selectedCrateGameIds: ['game-1'], selectedToteGameIds: ['tote-game-1'] }
     writeStoredValue('board-game-menu:draft:v1', draft)
     expect(readStoredValue('board-game-menu:draft:v1')).toEqual(draft)
     removeStoredValue('board-game-menu:draft:v1')

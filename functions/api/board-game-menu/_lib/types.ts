@@ -13,6 +13,7 @@ export interface Env {
 export interface MenuPayload {
   gameNightDate: string
   selectedCrateGameIds: string[]
+  selectedToteGameIds: string[]
   selectedContainerIds: string[]
 }
 
@@ -24,4 +25,5 @@ export interface SelectionSnapshot {
   containerIds: string[]
   items: Array<{ id: string; source: InclusionSource }>
   selectedCrateGameIds: string[]
+  selectedToteGameIds: string[]
 }

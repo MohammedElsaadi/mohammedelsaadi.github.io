@@ -187,6 +187,7 @@ function BoardGameMenuAdmin() {
 function GameEditor({ game, containers, tags, onClose, onSaved, onError }: { game: CatalogGame | null; containers: CatalogContainer[]; tags: Tag[]; onClose: () => void; onSaved: (message: string) => void; onError: (message: string) => void }) {
   const [form, setForm] = useState<GameForm>(() => game ? gameToForm(game) : blankGame(containers[0]?.id))
   const [cover, setCover] = useState<File | null>(null)
+  const [sideImage, setSideImage] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
   const update = <K extends keyof GameForm>(key: K, value: GameForm[K]) => setForm((current) => ({ ...current, [key]: value }))
 
@@ -194,9 +195,12 @@ function GameEditor({ game, containers, tags, onClose, onSaved, onError }: { gam
     event.preventDefault()
     setSaving(true)
     try {
-      const needsTwoStepActivation = !game && form.status === 'active' && Boolean(cover)
+      const needsTwoStepActivation = form.status === 'active' && Boolean(cover) && !game?.coverUrl
       const result = await boardGameApi.admin.saveGame(game?.id ?? null, formPayload(form, needsTwoStepActivation ? 'draft' : form.status))
-      if (cover) await boardGameApi.admin.uploadCover(result.id, cover)
+      await Promise.all([
+        ...(cover ? [boardGameApi.admin.uploadCover(result.id, cover)] : []),
+        ...(sideImage ? [boardGameApi.admin.uploadSide(result.id, sideImage)] : []),
+      ])
       if (needsTwoStepActivation) await boardGameApi.admin.saveGame(result.id, formPayload(form, 'active'))
       onSaved(game ? 'Game updated.' : 'Game created.')
     } catch (caught) {
@@ -221,34 +225,45 @@ function GameEditor({ game, containers, tags, onClose, onSaved, onError }: { gam
         </> : null}
         <AdminField label="Sort order"><input type="number" value={form.sortOrder} onChange={(event) => update('sortOrder', event.target.value)} /></AdminField>
         <AdminField label="Cover image"><input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setCover(event.target.files?.[0] ?? null)} /></AdminField>
+        <AdminField label="Optional side image"><input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setSideImage(event.target.files?.[0] ?? null)} /></AdminField>
       </div>
-      <MediaPreview
-        file={cover}
-        currentUrl={game?.coverUrl ?? null}
-        label={`${form.name || 'Game'} cover preview`}
-        rotationDegrees={form.coverRotationDegrees}
-        onRotate={() => update('coverRotationDegrees', ((form.coverRotationDegrees + 90) % 360) as CatalogGame['coverRotationDegrees'])}
-      />
+      <div className="bgm-admin-media-previews">
+        <MediaPreview
+          title="Cover artwork"
+          file={cover}
+          currentUrl={game?.coverUrl ?? null}
+          label={`${form.name || 'Game'} cover preview`}
+          rotationDegrees={form.coverRotationDegrees}
+          onRotate={() => update('coverRotationDegrees', ((form.coverRotationDegrees + 90) % 360) as CatalogGame['coverRotationDegrees'])}
+        />
+        <MediaPreview
+          title="Side artwork"
+          file={sideImage}
+          currentUrl={game?.sideUrl ?? null}
+          label={`${form.name || 'Game'} side preview`}
+        />
+      </div>
       <fieldset className="bgm-admin-checks"><legend>Storage behavior</legend>
         <label><input type="checkbox" checked={form.selectable} onChange={(event) => update('selectable', event.target.checked)} /> Selectable</label>
         <label><input type="checkbox" checked={form.alwaysPacked} onChange={(event) => update('alwaysPacked', event.target.checked)} /> Always packed</label>
         <label><input type="checkbox" checked={form.allowOverflow} onChange={(event) => update('allowOverflow', event.target.checked)} /> Allow overflow</label>
       </fieldset>
       {form.itemType === 'game' ? <fieldset className="bgm-admin-checks"><legend>Vibe tags</legend>{tags.map((tag) => <label key={tag.id}><input type="checkbox" checked={form.tagIds.includes(tag.id)} onChange={() => update('tagIds', form.tagIds.includes(tag.id) ? form.tagIds.filter((id) => id !== tag.id) : [...form.tagIds, tag.id])} /> {tag.name}</label>)}</fieldset> : null}
-      <div className="bgm-admin-form-actions">{game?.coverUrl && game.status === 'draft' ? <button type="button" className="bgm-secondary-button" onClick={async () => { await boardGameApi.admin.removeCover(game.id); onSaved('Cover removed.') }}>Remove current cover</button> : null}<button type="button" className="bgm-secondary-button" onClick={onClose}>Cancel</button><button className="bgm-primary-button" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button></div>
+      <div className="bgm-admin-form-actions">{game?.coverUrl && game.status === 'draft' ? <button type="button" className="bgm-secondary-button" onClick={async () => { await boardGameApi.admin.removeCover(game.id); onSaved('Cover removed.') }}>Remove current cover</button> : null}{game?.sideUrl ? <button type="button" className="bgm-secondary-button" onClick={async () => { await boardGameApi.admin.removeSide(game.id); onSaved('Side artwork removed.') }}>Remove side artwork</button> : null}<button type="button" className="bgm-secondary-button" onClick={onClose}>Cancel</button><button className="bgm-primary-button" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button></div>
     </form>
   )
 }
 
 function AdminField({ label, children }: { label: string; children: React.ReactNode }) { return <label className="bgm-admin-field"><span>{label}</span>{children}</label> }
 
-function MediaPreview({ file, currentUrl, label, rotationDegrees = 0, onRotate }: { file: File | null; currentUrl: string | null; label: string; rotationDegrees?: number; onRotate?: () => void }) {
+function MediaPreview({ title, file, currentUrl, label, rotationDegrees = 0, onRotate }: { title?: string; file: File | null; currentUrl: string | null; label: string; rotationDegrees?: number; onRotate?: () => void }) {
   const objectUrl = useMemo(() => file ? URL.createObjectURL(file) : null, [file])
   useEffect(() => () => { if (objectUrl) URL.revokeObjectURL(objectUrl) }, [objectUrl])
   const source = objectUrl ?? currentUrl
   if (!source) return null
   return (
     <div className="bgm-admin-media-preview">
+      {title ? <strong>{title}</strong> : null}
       <div className="bgm-admin-media-preview__frame">
         <img src={source} alt={label} style={{ transform: `rotate(${rotationDegrees}deg)` }} />
       </div>
@@ -290,6 +305,8 @@ function ContainerEditor({ container, onSaved, onError }: { container: CatalogCo
       {crate ? <>
         {(['innerWidthMm','innerHeightMm','innerDepthMm'] as const).map((field) => <AdminField key={field} label={`${field.replace('inner','Internal ').replace('Mm','')} (mm)`}><input type="number" min="1" value={value[field] ?? ''} onChange={(event) => setValue({ ...value, [field]: numberOrNull(event.target.value) })} /></AdminField>)}
         <AdminField label="Overflow limit"><input type="number" min="0" max="2" value={value.overflowLimit} onChange={(event) => setValue({ ...value, overflowLimit: Number(event.target.value) })} /></AdminField>
+        <AdminField label="Height overflow tolerance (mm)"><input type="number" min="0" max="500" value={value.heightToleranceMm} onChange={(event) => setValue({ ...value, heightToleranceMm: Number(event.target.value) })} /></AdminField>
+        <p className="bgm-admin-help">Adds invisible packing height above the crate rim. Boxes can protrude by this amount while the 3D crate keeps its real height.</p>
       </> : <>
         <p>Contents are all active games assigned to this tote. Tote capacity is intentionally out of scope.</p>
         <AdminField label="Tote artwork"><input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setImage(event.target.files?.[0] ?? null)} /></AdminField>
@@ -309,10 +326,53 @@ function TagsAdmin({ tags, onSaved, onError }: { tags: Tag[]; onSaved: (message:
 
 function MenusAdmin({ menus, catalog, onSaved, onError }: { menus: SavedMenu[]; catalog: AdminCatalogResponse; onSaved: (message: string) => void; onError: (message: string) => void }) {
   const [editing, setEditing] = useState<SavedMenu | null>(null)
-  const [selected, setSelected] = useState<string[]>([])
-  const [toteSelected, setToteSelected] = useState(false)
-  const startEdit = (menu: SavedMenu) => { setEditing(menu); setSelected(menu.selectedCrateGameIds); const tote = catalog.containers.find((container) => container.slug === 'board-game-tote'); setToteSelected(Boolean(tote && menu.selectedContainerIds.includes(tote.id))) }
-  return <section><div className="bgm-admin-section-heading"><div><h2>Saved menus</h2><p>One Board Game Menu per game-night date.</p></div></div>{editing ? <form className="bgm-admin-editor" onSubmit={async (event) => { event.preventDefault(); const crate = catalog.containers.find((container) => container.slug === 'main-crate'); const tote = catalog.containers.find((container) => container.slug === 'board-game-tote'); try { await boardGameApi.admin.updateMenu(editing.id, { gameNightDate: editing.gameNightDate, selectedCrateGameIds: selected, selectedContainerIds: [...(selected.length && crate ? [crate.id] : []), ...(toteSelected && tote ? [tote.id] : [])] }); setEditing(null); onSaved('Saved menu updated.') } catch (error) { onError(error instanceof Error ? error.message : 'Could not update menu.') } }}><div className="bgm-admin-row"><h3>{menuTitle(editing.gameNightDate)}</h3><button type="button" className="bgm-text-button" onClick={() => setEditing(null)}>Close</button></div><fieldset className="bgm-admin-checks"><legend>Crate games</legend>{catalog.games.filter((game) => game.status === 'active' && game.selectable && game.containerSlug === 'main-crate').map((game) => <label key={game.id}><input type="checkbox" checked={selected.includes(game.id)} onChange={() => setSelected(selected.includes(game.id) ? selected.filter((id) => id !== game.id) : [...selected, game.id])} /> {game.name}</label>)}</fieldset><label className="bgm-admin-checkbox"><input type="checkbox" checked={toteSelected} onChange={(event) => setToteSelected(event.target.checked)} /> Include Board Game Tote</label><button className="bgm-primary-button">Save menu changes</button></form> : null}<div className="bgm-menu-list">{menus.map((menu) => <article key={menu.id}><div><strong>{menu.title}</strong><span>Updated {new Date(menu.updatedAt).toLocaleString()}</span></div><div className="bgm-table-actions"><Link to={`/games/board-game-menu/menu/${menu.id}`}>Open</Link><button type="button" onClick={() => startEdit(menu)}>Edit</button><button type="button" className="is-danger" onClick={async () => { if (!window.confirm(`Delete ${menu.title}?`)) return; try { await boardGameApi.admin.deleteMenu(menu.id); onSaved('Menu deleted.') } catch (error) { onError(error instanceof Error ? error.message : 'Could not delete menu.') } }}>Delete</button></div></article>)}</div>{menus.length === 0 ? <p>No saved menus yet.</p> : null}</section>
+  const [selectedCrateIds, setSelectedCrateIds] = useState<string[]>([])
+  const [selectedToteIds, setSelectedToteIds] = useState<string[]>([])
+  const crateGames = catalog.games.filter((game) => game.status === 'active' && game.selectable && game.containerSlug === 'main-crate')
+  const toteGames = catalog.games.filter((game) => game.status === 'active' && game.selectable && game.containerSlug === 'board-game-tote')
+  const toggle = (ids: string[], setIds: (ids: string[]) => void, id: string) => {
+    setIds(ids.includes(id) ? ids.filter((candidate) => candidate !== id) : [...ids, id])
+  }
+  const startEdit = (menu: SavedMenu) => {
+    setEditing(menu)
+    setSelectedCrateIds(menu.selectedCrateGameIds)
+    setSelectedToteIds(menu.selectedToteGameIds)
+  }
+
+  return (
+    <section>
+      <div className="bgm-admin-section-heading"><div><h2>Saved menus</h2><p>One Board Game Menu per game-night date.</p></div></div>
+      {editing ? (
+        <form className="bgm-admin-editor" onSubmit={async (event) => {
+          event.preventDefault()
+          const crate = catalog.containers.find((container) => container.slug === 'main-crate')
+          const tote = catalog.containers.find((container) => container.slug === 'board-game-tote')
+          try {
+            await boardGameApi.admin.updateMenu(editing.id, {
+              gameNightDate: editing.gameNightDate,
+              selectedCrateGameIds: selectedCrateIds,
+              selectedToteGameIds: selectedToteIds,
+              selectedContainerIds: [
+                ...(selectedCrateIds.length && crate ? [crate.id] : []),
+                ...(selectedToteIds.length && tote ? [tote.id] : []),
+              ],
+            })
+            setEditing(null)
+            onSaved('Saved menu updated.')
+          } catch (error) {
+            onError(error instanceof Error ? error.message : 'Could not update menu.')
+          }
+        }}>
+          <div className="bgm-admin-row"><h3>{menuTitle(editing.gameNightDate)}</h3><button type="button" className="bgm-text-button" onClick={() => setEditing(null)}>Close</button></div>
+          <fieldset className="bgm-admin-checks"><legend>Crate games</legend>{crateGames.map((game) => <label key={game.id}><input type="checkbox" checked={selectedCrateIds.includes(game.id)} onChange={() => toggle(selectedCrateIds, setSelectedCrateIds, game.id)} /> {game.name}</label>)}</fieldset>
+          <fieldset className="bgm-admin-checks"><legend>Tote games</legend>{toteGames.map((game) => <label key={game.id}><input type="checkbox" checked={selectedToteIds.includes(game.id)} onChange={() => toggle(selectedToteIds, setSelectedToteIds, game.id)} /> {game.name}</label>)}</fieldset>
+          <button className="bgm-primary-button">Save menu changes</button>
+        </form>
+      ) : null}
+      <div className="bgm-menu-list">{menus.map((menu) => <article key={menu.id}><div><strong>{menu.title}</strong><span>Updated {new Date(menu.updatedAt).toLocaleString()}</span></div><div className="bgm-table-actions"><Link to={`/games/board-game-menu/menu/${menu.id}`}>Open</Link><button type="button" onClick={() => startEdit(menu)}>Edit</button><button type="button" className="is-danger" onClick={async () => { if (!window.confirm(`Delete ${menu.title}?`)) return; try { await boardGameApi.admin.deleteMenu(menu.id); onSaved('Menu deleted.') } catch (error) { onError(error instanceof Error ? error.message : 'Could not delete menu.') } }}>Delete</button></div></article>)}</div>
+      {menus.length === 0 ? <p>No saved menus yet.</p> : null}
+    </section>
+  )
 }
 
 export default BoardGameMenuAdmin
