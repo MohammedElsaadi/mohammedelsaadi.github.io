@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { CatalogGame, Tag } from '../api/types'
-import { createAllFilters, matchesFilters, toteMatchesFilters } from './matchesFilters'
+import { createDefaultFilters, matchesFilters } from './matchesFilters'
 
 const tags: Tag[] = [
   { id: 'chill', slug: 'chill', name: 'Chill' },
@@ -14,39 +14,45 @@ const game: CatalogGame = {
 }
 
 describe('matchesFilters', () => {
-  it('matches when all filters are enabled', () => {
-    expect(matchesFilters(game, createAllFilters(tags))).toBe(true)
-  })
-
-  it('fades games outside the selected course tab', () => {
-    const filters = createAllFilters(tags)
-    filters.courseTab = 'dessert'
-    expect(matchesFilters(game, filters)).toBe(false)
-  })
-
-  it('fades a game when any one of its vibe tags is disabled', () => {
-    const filters = createAllFilters(tags)
-    filters.vibeTagIds = ['chill']
-    expect(matchesFilters(game, filters)).toBe(false)
-    filters.vibeTagIds = ['chill', 'thinky']
+  it('shows every game when optional filters are off', () => {
+    const filters = createDefaultFilters()
+    expect(filters.vibeTagIds).toEqual([])
+    expect(filters.timeBuckets).toEqual([])
+    expect(filters.maxPlayerCounts).toEqual([])
     expect(matchesFilters(game, filters)).toBe(true)
-    filters.vibeTagIds = []
+  })
+
+  it('hides games outside the selected course tab', () => {
+    const filters = createDefaultFilters()
+    filters.courseTab = 'dessert'
     expect(matchesFilters(game, filters)).toBe(false)
   })
 
-  it('matches a tote when at least one content item matches', () => {
-    const filters = createAllFilters(tags)
-    const nonmatch = { ...game, id: 'other', course: 'dessert' as const }
-    expect(toteMatchesFilters([nonmatch, game], filters)).toBe(true)
+  it('shows games having any selected vibe', () => {
+    const filters = createDefaultFilters()
+    filters.vibeTagIds = ['chill']
+    expect(matchesFilters(game, filters)).toBe(true)
+    filters.vibeTagIds = ['competitive']
+    expect(matchesFilters(game, filters)).toBe(false)
+    filters.vibeTagIds = ['competitive', 'thinky']
+    expect(matchesFilters(game, filters)).toBe(true)
   })
 
-  it('categorizes the tote bundle as an appetizer regardless of its contents courses', () => {
-    const filters = createAllFilters(tags)
-    filters.courseTab = 'appetizer'
-    expect(toteMatchesFilters([game], filters)).toBe(true)
-    filters.courseTab = 'main'
-    expect(toteMatchesFilters([game], filters)).toBe(false)
-    filters.courseTab = 'dessert'
-    expect(toteMatchesFilters([game], filters)).toBe(false)
+  it('applies time filters only when at least one is selected', () => {
+    const filters = createDefaultFilters()
+    filters.timeBuckets = ['30-60']
+    expect(matchesFilters(game, filters)).toBe(true)
+    filters.timeBuckets = ['under-30']
+    expect(matchesFilters(game, filters)).toBe(false)
+  })
+
+  it('filters by the published maximum player count', () => {
+    const filters = createDefaultFilters()
+    filters.maxPlayerCounts = [4]
+    expect(matchesFilters(game, filters)).toBe(true)
+    filters.maxPlayerCounts = [3]
+    expect(matchesFilters(game, filters)).toBe(false)
+    filters.maxPlayerCounts = [6]
+    expect(matchesFilters({ ...game, maxPlayers: 7 }, filters)).toBe(true)
   })
 })

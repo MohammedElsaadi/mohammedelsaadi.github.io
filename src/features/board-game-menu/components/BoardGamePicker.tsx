@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ApiRequestError, boardGameApi } from '../api/boardGameApi'
 import type { CatalogGame, CatalogResponse } from '../api/types'
-import { createAllFilters, matchesFilters } from '../filters/matchesFilters'
+import { createDefaultFilters, matchesFilters } from '../filters/matchesFilters'
 import { packCrate } from '../packing/packCrate'
 import type { CrateDimensions, PackingItem, PackingResult } from '../packing/types'
 import {
@@ -113,7 +113,7 @@ export function BoardGamePicker({
   const [gameNightDate, setGameNightDate] = useState(startingDraft.gameNightDate)
   const [selectedIds, setSelectedIds] = useState(startingDraft.selectedCrateGameIds)
   const [selectedToteIds, setSelectedToteIds] = useState(startingDraft.selectedToteGameIds)
-  const [filters, setFilters] = useState(() => createAllFilters(catalog.tags))
+  const [filters, setFilters] = useState(createDefaultFilters)
   const [message, setMessage] = useState<string | null>(null)
   const [rejectedId, setRejectedId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -130,6 +130,14 @@ export function BoardGamePicker({
     [catalog.crateGames, catalog.requiredCrateItems],
   )
   const menuGameCount = selectedIds.length + selectedToteIds.length
+  const visibleToteGames = useMemo(
+    () => catalog.toteGames.filter((game) => matchesFilters(game, filters)),
+    [catalog.toteGames, filters],
+  )
+  const visibleCrateGames = useMemo(
+    () => catalog.crateGames.filter((game) => matchesFilters(game, filters)),
+    [catalog.crateGames, filters],
+  )
 
   const persistDraft = (next: PickerDraft) => writeStoredValue(storageKey, next)
   const updateDate = (date: string) => {
@@ -294,27 +302,27 @@ export function BoardGamePicker({
           toteSelected={toteSelected}
         />
         <section ref={browserRef} className="bgm-browser" aria-label="Board-game collection">
-          {catalog.crateGames.length + catalog.toteGames.length > 0 ? <CatalogPreviewCanvas scrollRoot={browserRef} /> : null}
+          {visibleCrateGames.length + visibleToteGames.length > 0 ? <CatalogPreviewCanvas scrollRoot={browserRef} /> : null}
           <div className="bgm-browser__filters">
             <SecondaryFilterBar filters={filters} setFilters={setFilters} tags={catalog.tags} />
           </div>
           <div className="bgm-game-grid">
-            {catalog.toteGames.map((game) => (
+            {visibleToteGames.map((game) => (
               <Game3DCard
                 key={game.id}
                 game={game}
                 selected={selectedToteIds.includes(game.id)}
-                matches={matchesFilters(game, filters)}
+                matches
                 rejected={false}
                 onToggle={() => toggleToteGame(game)}
               />
             ))}
-            {catalog.crateGames.map((game) => (
+            {visibleCrateGames.map((game) => (
               <Game3DCard
                 key={game.id}
                 game={game}
                 selected={selectedIds.includes(game.id)}
-                matches={matchesFilters(game, filters)}
+                matches
                 rejected={rejectedId === game.id}
                 disabled={!crate?.innerWidthMm || !crate.innerHeightMm || !crate.innerDepthMm}
                 onToggle={() => toggleGame(game)}
@@ -323,6 +331,8 @@ export function BoardGamePicker({
           </div>
           {catalog.crateGames.length === 0 && catalog.toteGames.length === 0 ? (
             <div className="bgm-empty-state"><strong>No board games have been published yet.</strong><p>Add a draft in Admin, then publish it when its details are complete.</p></div>
+          ) : visibleCrateGames.length === 0 && visibleToteGames.length === 0 ? (
+            <div className="bgm-empty-state"><strong>No games match these filters.</strong><p>Choose another course or clear a filter to see more games.</p></div>
           ) : null}
 
           <footer className="bgm-save-bar">
