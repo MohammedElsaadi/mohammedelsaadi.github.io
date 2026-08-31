@@ -1,5 +1,3 @@
-export interface IAboutProps {}
-
 export function About() {
   return (
     <section id="about" className="py-10 px-4 bg-gradient-to-b from-[var(--color-darker-red)] to-[var(--color-lighter-red)]">

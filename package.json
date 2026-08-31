@@ -6,8 +6,13 @@
   "homepage": "https://mohammedelsaadi.github.io",
   "scripts": {
     "dev": "vite",
+    "dev:full": "npm run build && wrangler pages dev dist --persist-to .wrangler/state",
+    "db:migrate:local": "wrangler d1 execute BOARD_GAME_DB --config wrangler.local.jsonc --local --file migrations/0001_board_game_menu.sql --persist-to .wrangler/state --yes",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "vitest run",
+    "typecheck:functions": "tsc -p tsconfig.functions.json",
+    "check": "npm run lint && npm run test && npm run build && npm run typecheck:functions",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
@@ -25,6 +30,7 @@
     "three": "^0.182.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260830.1",
     "@eslint/js": "^9.39.4",
     "@types/node": "^24.12.0",
     "@types/react": "^19.2.14",
@@ -37,6 +43,8 @@
     "globals": "^17.4.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
-    "vite": "^8.0.1"
+    "vite": "^8.0.1",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.127.1"
   }
 }

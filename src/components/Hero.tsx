@@ -4,8 +4,6 @@ import MurphyImg2 from "../assets/Murphy-2.png";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 
-export interface IHeroProps {}
-
 export function Hero() {
   const [showMurphyHover, setShowMurphyHover] = useState(false);
   return (

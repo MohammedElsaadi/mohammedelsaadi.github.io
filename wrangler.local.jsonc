@@ -1,0 +1,17 @@
+{
+  "name": "mohammedelsaadi-board-game-menu-local",
+  "compatibility_date": "2026-08-30",
+  "d1_databases": [
+    {
+      "binding": "BOARD_GAME_DB",
+      "database_name": "board-game-menu-local",
+      "database_id": "local-BOARD_GAME_DB"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BOARD_GAME_MEDIA",
+      "bucket_name": "board-game-menu-media-local"
+    }
+  ]
+}

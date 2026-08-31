@@ -3,8 +3,6 @@ import resumePdf from "../assets/Mohammed-Elsaadi-Resume.pdf";
 import { FiCopy, FiCheck, FiMail } from "react-icons/fi";
 import { FaLinkedin } from "react-icons/fa";
 
-export interface IResumeContactProps {}
-
 export function ResumeContact() {
   const email = "mohammedelsaadi@gmail.com";
   const [copied, setCopied] = React.useState(false);
