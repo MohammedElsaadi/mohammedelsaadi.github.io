@@ -22,7 +22,10 @@ export class ApiRequestError extends Error {
 
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, init)
-  const body = (await response.json().catch(() => ({}))) as T & ApiErrorBody
+  const body = await response.json().catch(() => null) as (T & ApiErrorBody) | null
+  if (body === null) {
+    throw new ApiRequestError(response.ok ? 502 : response.status, { error: 'The server returned an invalid response.' })
+  }
   if (!response.ok) throw new ApiRequestError(response.status, body)
   return body
 }

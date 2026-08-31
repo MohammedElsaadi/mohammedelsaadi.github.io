@@ -95,26 +95,52 @@ interface PackedBoxProps {
   coverUrl: string | null
   coverRotationDegrees: 0 | 90 | 180 | 270
   color: string
+  dropHeight: number
+  reducedMotion: boolean
+  onImpact: () => void
 }
 
-export function PackedBox({ dimensions, position, coverUrl, coverRotationDegrees, color }: PackedBoxProps) {
+export function PackedBox({
+  dimensions,
+  position,
+  coverUrl,
+  coverRotationDegrees,
+  color,
+  dropHeight,
+  reducedMotion,
+  onImpact,
+}: PackedBoxProps) {
   const group = useRef<THREE.Group>(null)
-  const firstFrame = useRef(true)
+  const [startPosition] = useState<[number, number, number]>(() => [
+    position[0],
+    position[1] + (reducedMotion ? 0 : dropHeight),
+    position[2],
+  ])
+  const dropping = useRef(!reducedMotion)
 
   useFrame((_, delta) => {
     if (!group.current) return
-    if (firstFrame.current) {
+
+    if (reducedMotion) {
       group.current.position.set(...position)
-      firstFrame.current = false
+      dropping.current = false
       return
     }
-    group.current.position.x = THREE.MathUtils.damp(group.current.position.x, position[0], 9, delta)
-    group.current.position.y = THREE.MathUtils.damp(group.current.position.y, position[1], 9, delta)
-    group.current.position.z = THREE.MathUtils.damp(group.current.position.z, position[2], 9, delta)
+
+    const smoothing = dropping.current ? 18 : 9
+    group.current.position.x = THREE.MathUtils.damp(group.current.position.x, position[0], smoothing, delta)
+    group.current.position.y = THREE.MathUtils.damp(group.current.position.y, position[1], smoothing, delta)
+    group.current.position.z = THREE.MathUtils.damp(group.current.position.z, position[2], smoothing, delta)
+
+    if (dropping.current && Math.abs(group.current.position.y - position[1]) < 0.025) {
+      group.current.position.set(...position)
+      dropping.current = false
+      onImpact()
+    }
   })
 
   return (
-    <group ref={group} position={position}>
+    <group ref={group} position={startPosition}>
       <mesh castShadow receiveShadow>
         <boxGeometry args={dimensions} />
         {coverUrl ? <CoverMaterial url={coverUrl} fallbackColor={color} rotationDegrees={coverRotationDegrees} /> : <meshStandardMaterial color={color} roughness={0.72} />}

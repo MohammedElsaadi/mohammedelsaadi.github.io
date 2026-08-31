@@ -222,7 +222,7 @@ export function BoardGamePicker({
   return (
     <main className="bgm-picker">
       <header className="bgm-picker__header">
-        <div>
+        <div className="bgm-picker__intro">
           <Link to="/games" className="bgm-back-link">← Games & experiments</Link>
           <h1>Board Game Menu</h1>
           <p>Build the game-night menu and watch the real crate fill up.</p>
@@ -232,6 +232,19 @@ export function BoardGamePicker({
           <input id="game-night-date" type="date" value={gameNightDate} onChange={(event) => updateDate(event.target.value)} />
         </div>
       </header>
+
+      <div className="bgm-picker__toolbar">
+        {developmentMode ? (
+          <div className="bgm-dev-banner">Previewing fictional development data. Run the full local stack to use D1.</div>
+        ) : null}
+        <FilterBar filters={filters} setFilters={setFilters} tags={catalog.tags} />
+        {message ? (
+          <div className="bgm-message" role="status">
+            <span>{message}</span>
+            {duplicateMenuId ? <Link to={`/games/board-game-menu/menu/${duplicateMenuId}`}>Open existing menu</Link> : null}
+          </div>
+        ) : null}
+      </div>
 
       <div className="bgm-picker__body">
         <CratePanel
@@ -243,19 +256,6 @@ export function BoardGamePicker({
           toteSelected={toteSelected}
         />
         <section className="bgm-browser" aria-label="Board-game collection">
-          <div className="bgm-browser__sticky">
-            {developmentMode ? (
-              <div className="bgm-dev-banner">Previewing fictional development data. Run the full local stack to use D1.</div>
-            ) : null}
-            <FilterBar filters={filters} setFilters={setFilters} tags={catalog.tags} />
-            {message ? (
-              <div className="bgm-message" role="status">
-                <span>{message}</span>
-                {duplicateMenuId ? <Link to={`/games/board-game-menu/menu/${duplicateMenuId}`}>Open existing menu</Link> : null}
-              </div>
-            ) : null}
-          </div>
-
           <div className="bgm-game-grid">
             {tote && catalog.toteGames.length > 0 ? (
               <ToteBundleCard
