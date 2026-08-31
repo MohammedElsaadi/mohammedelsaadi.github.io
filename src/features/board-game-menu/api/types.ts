@@ -19,6 +19,7 @@ export interface CatalogContainer {
   innerDepthMm: number | null
   overflowLimit: number
   isActive: boolean
+  imageUrl: string | null
 }
 
 export interface CatalogGame {
@@ -42,6 +43,7 @@ export interface CatalogGame {
   complexity: number | null
   course: Course | null
   coverUrl: string | null
+  coverRotationDegrees: 0 | 90 | 180 | 270
   status: GameStatus
   sortOrder: number
   tags: Tag[]

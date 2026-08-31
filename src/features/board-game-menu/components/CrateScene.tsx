@@ -4,10 +4,11 @@ import { Suspense, useMemo } from 'react'
 import type { CatalogContainer, CatalogGame } from '../api/types'
 import type { PackingResult } from '../packing/types'
 import { mmToScene } from '../three/dimensions'
-import { PackedBox } from './BoardGameBoxMesh'
+import { CoverMaterial, PackedBox } from './BoardGameBoxMesh'
 
 interface CrateSceneProps {
   crate: CatalogContainer
+  tote?: CatalogContainer
   games: CatalogGame[]
   packing: PackingResult
   toteSelected: boolean
@@ -20,12 +21,12 @@ function colorFor(id: string) {
   return palette[index]
 }
 
-function ToteMesh({ x, z, scale }: { x: number; z: number; scale: number }) {
+function ToteMesh({ x, z, scale, imageUrl }: { x: number; z: number; scale: number; imageUrl: string | null }) {
   return (
     <group position={[x, scale * 0.62, z]}>
       <mesh castShadow>
         <boxGeometry args={[scale * 1.25, scale * 1.2, scale * 0.56]} />
-        <meshStandardMaterial color="#d9794f" roughness={0.9} />
+        {imageUrl ? <CoverMaterial url={imageUrl} fallbackColor="#d9794f" rotationDegrees={0} /> : <meshStandardMaterial color="#d9794f" roughness={0.9} />}
       </mesh>
       <mesh position={[0, scale * 0.58, 0]} rotation={[0, 0, Math.PI]}>
         <torusGeometry args={[scale * 0.38, scale * 0.065, 8, 28, Math.PI]} />
@@ -35,7 +36,7 @@ function ToteMesh({ x, z, scale }: { x: number; z: number; scale: number }) {
   )
 }
 
-function SceneContents({ crate, games, packing, toteSelected }: CrateSceneProps) {
+function SceneContents({ crate, tote, games, packing, toteSelected }: CrateSceneProps) {
   const width = mmToScene(crate.innerWidthMm ?? 1)
   const height = mmToScene(crate.innerHeightMm ?? 1)
   const depth = mmToScene(crate.innerDepthMm ?? 1)
@@ -91,6 +92,7 @@ function SceneContents({ crate, games, packing, toteSelected }: CrateSceneProps)
               dimensions={dimensions}
               position={position}
               coverUrl={game?.coverUrl ?? null}
+              coverRotationDegrees={game?.coverRotationDegrees ?? 0}
               color={colorFor(packed.itemId)}
             />
           )
@@ -112,6 +114,7 @@ function SceneContents({ crate, games, packing, toteSelected }: CrateSceneProps)
               ]}
               position={position}
               coverUrl={game?.coverUrl ?? null}
+              coverRotationDegrees={game?.coverRotationDegrees ?? 0}
               color={colorFor(overflow.itemId)}
             />
           )
@@ -119,7 +122,12 @@ function SceneContents({ crate, games, packing, toteSelected }: CrateSceneProps)
       </Suspense>
 
       {toteSelected ? (
-        <ToteMesh x={width / 2 + Math.max(width * 0.28, 1.2)} z={depth * 0.12} scale={Math.max(Math.min(width, depth) * 0.28, 0.8)} />
+        <ToteMesh
+          x={width / 2 + Math.max(width * 0.28, 1.2)}
+          z={depth * 0.12}
+          scale={Math.max(Math.min(width, depth) * 0.28, 0.8)}
+          imageUrl={tote?.imageUrl ?? null}
+        />
       ) : null}
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -wall, 0]} receiveShadow>

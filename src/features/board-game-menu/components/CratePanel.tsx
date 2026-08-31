@@ -4,13 +4,14 @@ import { CrateScene } from './CrateScene'
 
 interface CratePanelProps {
   crate: CatalogContainer | undefined
+  tote: CatalogContainer | undefined
   games: CatalogGame[]
   packing: PackingResult
   selectedCount: number
   toteSelected: boolean
 }
 
-export function CratePanel({ crate, games, packing, selectedCount, toteSelected }: CratePanelProps) {
+export function CratePanel({ crate, tote, games, packing, selectedCount, toteSelected }: CratePanelProps) {
   const configured = Boolean(
     crate?.innerWidthMm && crate.innerHeightMm && crate.innerDepthMm,
   )
@@ -35,7 +36,7 @@ export function CratePanel({ crate, games, packing, selectedCount, toteSelected 
       </div>
       <div className="bgm-crate-panel__scene">
         {configured && crate ? (
-          <CrateScene crate={crate} games={games} packing={packing} toteSelected={toteSelected} />
+          <CrateScene crate={crate} tote={tote} games={games} packing={packing} toteSelected={toteSelected} />
         ) : (
           <div className="bgm-crate-panel__empty">
             <span aria-hidden="true">◇</span>

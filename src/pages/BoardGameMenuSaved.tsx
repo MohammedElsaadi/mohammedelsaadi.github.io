@@ -88,7 +88,8 @@ function BoardGameMenuSaved() {
   }
 
   const crate = menu.containers.find((container) => container.slug === 'main-crate')
-  const toteSelected = menu.containers.some((container) => container.slug === 'board-game-tote')
+  const tote = menu.containers.find((container) => container.slug === 'board-game-tote')
+  const toteSelected = Boolean(tote)
   const overflowIds = new Set(packing.overflow.map((item) => item.itemId))
   const packedIds = new Set(packing.packed.map((item) => item.itemId))
   const inside = menu.items.filter((item) => item.inclusionSource === 'selected' && packedIds.has(item.id))
@@ -108,11 +109,12 @@ function BoardGameMenuSaved() {
         {hasEditToken ? <button type="button" className="bgm-primary-button" onClick={() => setEditing(true)}>Edit menu</button> : null}
       </header>
 
-      {notificationSent === false ? <div className="bgm-saved-warning">Menu saved successfully, but the owner notification could not be sent.</div> : null}
+      {notificationSent === false ? <div className="bgm-saved-warning">Menu saved successfully, but the text notification could not be sent.</div> : null}
 
       <div className="bgm-saved-grid">
         <CratePanel
           crate={crate}
+          tote={tote}
           games={menu.items}
           packing={packing.success ? packing : EMPTY_PACKING}
           selectedCount={menu.selectedCrateGameIds.length}

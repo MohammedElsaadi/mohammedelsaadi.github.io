@@ -11,8 +11,9 @@ The feature is split into small modules under `src/features/board-game-menu`:
 - `components/`: accessible 3D picker cards, responsive picker layout, and the persistent crate/tote scene;
 - `api/`: typed browser API client and fictional development-only preview data;
 - `state/`: versioned local draft and edit-token storage;
-- `functions/api/board-game-menu`: Cloudflare Pages Functions for the public catalog, saved menus, Admin, R2 media, and notification email;
-- `migrations/0001_board_game_menu.sql`: D1 schema plus initial container/tag records.
+- `worker/index.ts`: Cloudflare Worker entrypoint and API router;
+- `functions/api/board-game-menu`: reusable route handlers for the public catalog, saved menus, Admin, R2 media, and Twilio SMS notifications;
+- `migrations/`: ordered D1 schema, seed records, and media-option migrations.
 
 The production collection is never sourced from the development preview. Active games, real dimensions, covers, tags, container assignments, accessories, and saved menus come from D1/R2 and are managed through `/games/board-game-menu/admin`.
 
@@ -27,14 +28,14 @@ npm run dev
 
 When the API is not available in Vite-only development, the picker displays clearly labeled fictional data so the 3D/filter/packing UI remains testable. Saving and Admin require the full local stack.
 
-Initialize local D1 once (the migration is idempotent), then run Pages Functions with local D1/R2 persistence:
+Apply local D1 migrations, then run the Worker with local D1/R2 persistence:
 
 ```bash
 npm run db:migrate:local
 npm run dev:full
 ```
 
-Wrangler stores local state in the ignored `.wrangler/state` directory. Email is intentionally skipped locally when server-side email settings are absent; the menu save remains successful and the response reports `notificationSent: false`.
+Wrangler/Miniflare automatically creates local-only D1 and R2 resources in the ignored `.wrangler/state` directory. No remote preview database or bucket is required. SMS is intentionally skipped locally when Twilio settings are absent; the menu save remains successful and the response reports `notificationSent: false`.
 
 Quality gates:
 
@@ -42,40 +43,38 @@ Quality gates:
 npm run check
 ```
 
-This runs lint, Vitest domain tests, the production Vite build, and the Pages Functions TypeScript check.
+This runs lint, Vitest domain tests, the production Vite build, and the Worker/route-handler TypeScript check.
 
 ## Cloudflare setup
 
-The repository contains the code and binding names, but no account IDs, API tokens, email addresses, or other credentials. Configure the following in the Cloudflare dashboard for both Preview and Production where appropriate.
+The project deploys through Cloudflare Workers Builds using `npm run build` followed by `npx wrangler deploy`. Static assets come from `./dist`; `/api/*` requests run through the Worker entrypoint. Secrets are configured on the deployed Worker and must never be committed.
 
 ### 1. D1
 
-1. Create a D1 database, for example `board-game-menu`.
-2. Bind it to the Pages project as `BOARD_GAME_DB`.
-3. Apply `migrations/0001_board_game_menu.sql` with the D1 dashboard or Wrangler using the real database binding/configuration.
+1. Create the `board-game-menu` D1 database.
+2. Configure its real UUID in the `BOARD_GAME_DB` binding in `wrangler.jsonc`.
+3. Apply the ordered files in `migrations/` with `npx wrangler d1 migrations apply BOARD_GAME_DB --remote`.
 4. Open Admin and configure the Main Crate's measured internal width, height, and depth before publishing crate games.
-
-`wrangler.jsonc` contains the literal `REPLACE_WITH_D1_DATABASE_ID` placeholder. Replace it with the created database ID only if Wrangler configuration is the project's deployment source of truth; Git-based Pages deployments may instead use the dashboard binding. It is intentionally not a fabricated account resource ID.
 
 ### 2. R2
 
-1. Create an R2 bucket, for example `board-game-menu-media`.
-2. Bind it to the Pages project as `BOARD_GAME_MEDIA`.
-3. Keep writes private. Covers are served through the same-origin immutable media Function.
+1. Create the `board-game-menu-media` R2 bucket.
+2. Keep the `BOARD_GAME_MEDIA` binding in `wrangler.jsonc` pointed at that bucket.
+3. Keep writes private. Game covers and tote artwork are served through the same-origin immutable Worker route.
 
-### 3. Email Service
+### 3. Twilio SMS
 
-Onboard the Cloudflare-managed sender domain for Email Sending, create a narrowly scoped token with email-send permission, and configure these Pages Function secrets/variables:
+Create a Twilio sender number and a Standard or Restricted API key. Configure these Worker variables/secrets in Cloudflare:
 
 ```text
-CLOUDFLARE_ACCOUNT_ID
-CLOUDFLARE_EMAIL_API_TOKEN
-BOARD_GAME_NOTIFICATION_TO
-BOARD_GAME_NOTIFICATION_FROM
-PUBLIC_SITE_ORIGIN
+TWILIO_ACCOUNT_SID
+TWILIO_API_KEY_SID
+TWILIO_API_KEY_SECRET
+TWILIO_FROM_NUMBER
+BOARD_GAME_NOTIFICATION_TO_PHONE
 ```
 
-Do not prefix any of these with `VITE_`; Vite-prefixed values are client-visible. Notifications use Cloudflare's REST API after the D1 write commits. Notification failure never rolls back the saved menu.
+Store all five values as encrypted runtime Worker secrets. An existing assets-only Worker cannot accept runtime secrets: deploy the Worker entrypoint once, then add the secrets under the Worker's Settings > Variables and Secrets section. Phone numbers must use E.164 form, such as `+14165551234`. The non-sensitive `PUBLIC_SITE_ORIGIN` is committed in `wrangler.jsonc` as `https://mohammedelsaadi.com`. Do not prefix any value with `VITE_`; Vite-prefixed values are client-visible. Notification failure never rolls back the saved menu.
 
 ### 4. Cloudflare Access
 
@@ -96,22 +95,24 @@ Before advertising public menu creation broadly, add at least one of:
 - Cloudflare rate limiting for `/api/board-game-menu/menus*`;
 - Cloudflare Access restricted to the intended friend-facing users.
 
-The notification recipient and sender are fixed server-side, and public callers cannot provide email content or destinations.
+The notification recipient, sender, and message template are fixed server-side; public callers cannot provide SMS content or destinations.
 
 ## Deployment notes
 
-Pages Functions use file-based routes from the root `functions/` directory. The existing Vite build output remains `dist`, and current portfolio routes are unchanged. In Cloudflare Pages, use the normal production build command and output directory:
+Workers Builds runs:
 
 ```text
 Build command: npm run build
-Output directory: dist
+Deploy command: npx wrangler deploy
+Version command: npx wrangler versions upload
 ```
+
+`wrangler.jsonc` points Static Assets at `./dist` and invokes `worker/index.ts` first for `/api/*`. Local `wrangler dev` uses local emulations of the configured D1 and R2 bindings by default, so `preview_database_id` and `preview_bucket_name` are intentionally omitted.
 
 Reference documentation:
 
-- [Cloudflare Pages Functions](https://developers.cloudflare.com/pages/functions/)
-- [Pages Functions routing](https://developers.cloudflare.com/pages/functions/routing/)
-- [Pages Functions bindings](https://developers.cloudflare.com/pages/functions/bindings/)
+- [Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)
+- [Cloudflare Workers local data](https://developers.cloudflare.com/workers/local-development/local-data/)
 - [Cloudflare D1](https://developers.cloudflare.com/d1/)
 - [Cloudflare R2](https://developers.cloudflare.com/r2/)
-- [Cloudflare Email Service REST API](https://developers.cloudflare.com/email-service/api/send-emails/rest-api/)
+- [Twilio Messages API](https://www.twilio.com/docs/messaging/api/message-resource)

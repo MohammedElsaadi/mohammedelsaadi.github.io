@@ -1,6 +1,5 @@
 import type { CatalogGame, Tag } from '../api/types'
 import {
-  ALL_COURSES,
   ALL_PLAYER_COUNTS,
   ALL_TIME_BUCKETS,
   type FilterState,
@@ -16,7 +15,7 @@ const TIME_RANGES: Record<TimeBucket, { min: number; max: number }> = {
 
 export function createAllFilters(tags: Tag[]): FilterState {
   return {
-    courses: [...ALL_COURSES],
+    courseTab: 'all',
     vibeTagIds: tags.map((tag) => tag.id),
     timeBuckets: [...ALL_TIME_BUCKETS],
     playerCounts: [...ALL_PLAYER_COUNTS],
@@ -24,9 +23,9 @@ export function createAllFilters(tags: Tag[]): FilterState {
 }
 
 export function matchesFilters(game: CatalogGame, filters: FilterState): boolean {
-  const courseMatches = game.course !== null && filters.courses.includes(game.course)
+  const courseMatches = filters.courseTab === 'all' || game.course === filters.courseTab
   const vibeMatches =
-    game.tags.length === 0 || game.tags.some((tag) => filters.vibeTagIds.includes(tag.id))
+    game.tags.length === 0 || game.tags.every((tag) => filters.vibeTagIds.includes(tag.id))
   const timeMatches = filters.timeBuckets.some((bucket) => {
     if (game.minPlayTimeMinutes === null || game.maxPlayTimeMinutes === null) return false
     const range = TIME_RANGES[bucket]
@@ -41,5 +40,6 @@ export function matchesFilters(game: CatalogGame, filters: FilterState): boolean
 }
 
 export function toteMatchesFilters(toteGames: CatalogGame[], filters: FilterState): boolean {
-  return toteGames.some((game) => matchesFilters(game, filters))
+  if (filters.courseTab !== 'all' && filters.courseTab !== 'appetizer') return false
+  return toteGames.some((game) => matchesFilters(game, { ...filters, courseTab: 'all' }))
 }

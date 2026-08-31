@@ -22,7 +22,7 @@ export const onRequestPut: PagesFunction<Env> = async ({ env, params, request })
     if (!storedHash || !constantTimeEqual(storedHash, suppliedHash)) throw new HttpError(403, 'Edit permission is required.')
     const payload = parseMenuPayload(await readJsonObject(request))
     const snapshot = await updateMenu(env, menuId, payload)
-    const notificationSent = await notifyOwner(env, request, menuId, snapshot.gameNightDate, 'updated')
+    const notificationSent = await notifyOwner(env, request, menuId, snapshot.gameNightDate)
     return json({ saved: true, menuId, notificationSent })
   } catch (error) {
     return errorResponse(error)

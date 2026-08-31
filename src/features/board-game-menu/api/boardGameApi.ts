@@ -78,6 +78,20 @@ export const boardGameApi = {
         `/api/board-game-menu/admin/containers/${encodeURIComponent(container.id)}`,
         jsonInit('PUT', container),
       ),
+    uploadContainerImage: async (containerId: string, file: File) => {
+      const response = await fetch(
+        `/api/board-game-menu/admin/containers/${encodeURIComponent(containerId)}/image`,
+        { method: 'PUT', headers: { 'Content-Type': file.type }, body: file },
+      )
+      const body = (await response.json().catch(() => ({}))) as { imageUrl?: string } & ApiErrorBody
+      if (!response.ok) throw new ApiRequestError(response.status, body)
+      return body
+    },
+    removeContainerImage: (containerId: string) =>
+      requestJson<{ removed: true }>(
+        `/api/board-game-menu/admin/containers/${encodeURIComponent(containerId)}/image`,
+        { method: 'DELETE' },
+      ),
     createTag: (name: string) =>
       requestJson<Tag>('/api/board-game-menu/admin/tags', jsonInit('POST', { name })),
     updateTag: (tagId: string, name: string) =>

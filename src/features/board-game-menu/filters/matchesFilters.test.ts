@@ -10,7 +10,7 @@ const game: CatalogGame = {
   id: 'demo', slug: 'demo', name: 'Demo', itemType: 'game', containerId: 'crate', containerSlug: 'main-crate',
   selectable: true, alwaysPacked: false, allowOverflow: true, widthMm: 100, heightMm: 30, depthMm: 100,
   weightGrams: null, minPlayers: 2, maxPlayers: 4, minPlayTimeMinutes: 35, maxPlayTimeMinutes: 55,
-  complexity: 2, course: 'main', coverUrl: null, status: 'active', sortOrder: 0, tags,
+  complexity: 2, course: 'main', coverUrl: null, coverRotationDegrees: 0, status: 'active', sortOrder: 0, tags,
 }
 
 describe('matchesFilters', () => {
@@ -18,15 +18,17 @@ describe('matchesFilters', () => {
     expect(matchesFilters(game, createAllFilters(tags))).toBe(true)
   })
 
-  it('fades a disabled course', () => {
+  it('fades games outside the selected course tab', () => {
     const filters = createAllFilters(tags)
-    filters.courses = filters.courses.filter((course) => course !== 'main')
+    filters.courseTab = 'dessert'
     expect(matchesFilters(game, filters)).toBe(false)
   })
 
-  it('uses OR matching within the vibe group', () => {
+  it('fades a game when any one of its vibe tags is disabled', () => {
     const filters = createAllFilters(tags)
     filters.vibeTagIds = ['chill']
+    expect(matchesFilters(game, filters)).toBe(false)
+    filters.vibeTagIds = ['chill', 'thinky']
     expect(matchesFilters(game, filters)).toBe(true)
     filters.vibeTagIds = []
     expect(matchesFilters(game, filters)).toBe(false)
@@ -36,5 +38,15 @@ describe('matchesFilters', () => {
     const filters = createAllFilters(tags)
     const nonmatch = { ...game, id: 'other', course: 'dessert' as const }
     expect(toteMatchesFilters([nonmatch, game], filters)).toBe(true)
+  })
+
+  it('categorizes the tote bundle as an appetizer regardless of its contents courses', () => {
+    const filters = createAllFilters(tags)
+    filters.courseTab = 'appetizer'
+    expect(toteMatchesFilters([game], filters)).toBe(true)
+    filters.courseTab = 'main'
+    expect(toteMatchesFilters([game], filters)).toBe(false)
+    filters.courseTab = 'dessert'
+    expect(toteMatchesFilters([game], filters)).toBe(false)
   })
 })

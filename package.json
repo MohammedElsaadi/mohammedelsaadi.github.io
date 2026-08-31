@@ -6,8 +6,8 @@
   "homepage": "https://mohammedelsaadi.github.io",
   "scripts": {
     "dev": "vite",
-    "dev:full": "npm run build && wrangler pages dev dist --persist-to .wrangler/state",
-    "db:migrate:local": "wrangler d1 execute BOARD_GAME_DB --config wrangler.local.jsonc --local --file migrations/0001_board_game_menu.sql --persist-to .wrangler/state --yes",
+    "dev:full": "npm run build && wrangler dev --persist-to .wrangler/state",
+    "db:migrate:local": "wrangler d1 migrations apply BOARD_GAME_DB --local --persist-to .wrangler/state",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
@@ -15,7 +15,7 @@
     "check": "npm run lint && npm run test && npm run build && npm run typecheck:functions",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -39,7 +39,6 @@
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
-    "gh-pages": "^6.3.0",
     "globals": "^17.4.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",

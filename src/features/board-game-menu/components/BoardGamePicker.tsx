@@ -236,6 +236,7 @@ export function BoardGamePicker({
       <div className="bgm-picker__body">
         <CratePanel
           crate={crate}
+          tote={tote}
           games={allSceneGames}
           packing={packing.success ? packing : EMPTY_PACKING}
           selectedCount={selectedIds.length}
@@ -259,6 +260,7 @@ export function BoardGamePicker({
             {tote && catalog.toteGames.length > 0 ? (
               <ToteBundleCard
                 name={tote.name}
+                imageUrl={tote.imageUrl}
                 games={catalog.toteGames}
                 selected={toteSelected}
                 matches={toteMatchesFilters(catalog.toteGames, filters)}

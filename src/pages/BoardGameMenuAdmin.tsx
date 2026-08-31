@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { boardGameApi } from '../features/board-game-menu/api/boardGameApi'
 import type { AdminCatalogResponse, CatalogContainer, CatalogGame, GameStatus, SavedMenu, Tag } from '../features/board-game-menu/api/types'
@@ -11,7 +11,7 @@ const blankGame = (containerId = '') => ({
   name: '', slug: '', itemType: 'game', status: 'draft', containerId, selectable: true,
   alwaysPacked: false, allowOverflow: true, widthMm: '', heightMm: '', depthMm: '', weightGrams: '',
   minPlayers: '', maxPlayers: '', minPlayTimeMinutes: '', maxPlayTimeMinutes: '', complexity: '',
-  course: '', sortOrder: '0', tagIds: [] as string[],
+  course: '', coverRotationDegrees: 0 as CatalogGame['coverRotationDegrees'], sortOrder: '0', tagIds: [] as string[],
 })
 
 type GameForm = ReturnType<typeof blankGame>
@@ -46,6 +46,7 @@ function gameToForm(game: CatalogGame): GameForm {
     maxPlayTimeMinutes: game.maxPlayTimeMinutes?.toString() ?? '',
     complexity: game.complexity?.toString() ?? '',
     course: game.course ?? '',
+    coverRotationDegrees: game.coverRotationDegrees,
     sortOrder: game.sortOrder.toString(),
     tagIds: game.tags.map((tag) => tag.id),
   }
@@ -158,7 +159,7 @@ function BoardGameMenuAdmin() {
                 <thead><tr><th>Cover</th><th>Name</th><th>Storage</th><th>Course</th><th>Dimensions</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody>{catalog.games.map((game) => (
                   <tr key={game.id}>
-                    <td>{game.coverUrl ? <img src={game.coverUrl} alt="" /> : <span className="bgm-cover-fallback">◇</span>}</td>
+                    <td>{game.coverUrl ? <img src={game.coverUrl} alt="" style={{ transform: `rotate(${game.coverRotationDegrees}deg)` }} /> : <span className="bgm-cover-fallback">◇</span>}</td>
                     <td><strong>{game.name}</strong><small>{game.itemType}</small></td>
                     <td>{catalog.containers.find((container) => container.id === game.containerId)?.name ?? 'Unknown'}</td>
                     <td>{game.course ?? '—'}</td>
@@ -221,6 +222,13 @@ function GameEditor({ game, containers, tags, onClose, onSaved, onError }: { gam
         <AdminField label="Sort order"><input type="number" value={form.sortOrder} onChange={(event) => update('sortOrder', event.target.value)} /></AdminField>
         <AdminField label="Cover image"><input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setCover(event.target.files?.[0] ?? null)} /></AdminField>
       </div>
+      <MediaPreview
+        file={cover}
+        currentUrl={game?.coverUrl ?? null}
+        label={`${form.name || 'Game'} cover preview`}
+        rotationDegrees={form.coverRotationDegrees}
+        onRotate={() => update('coverRotationDegrees', ((form.coverRotationDegrees + 90) % 360) as CatalogGame['coverRotationDegrees'])}
+      />
       <fieldset className="bgm-admin-checks"><legend>Storage behavior</legend>
         <label><input type="checkbox" checked={form.selectable} onChange={(event) => update('selectable', event.target.checked)} /> Selectable</label>
         <label><input type="checkbox" checked={form.alwaysPacked} onChange={(event) => update('alwaysPacked', event.target.checked)} /> Always packed</label>
@@ -234,14 +242,64 @@ function GameEditor({ game, containers, tags, onClose, onSaved, onError }: { gam
 
 function AdminField({ label, children }: { label: string; children: React.ReactNode }) { return <label className="bgm-admin-field"><span>{label}</span>{children}</label> }
 
+function MediaPreview({ file, currentUrl, label, rotationDegrees = 0, onRotate }: { file: File | null; currentUrl: string | null; label: string; rotationDegrees?: number; onRotate?: () => void }) {
+  const objectUrl = useMemo(() => file ? URL.createObjectURL(file) : null, [file])
+  useEffect(() => () => { if (objectUrl) URL.revokeObjectURL(objectUrl) }, [objectUrl])
+  const source = objectUrl ?? currentUrl
+  if (!source) return null
+  return (
+    <div className="bgm-admin-media-preview">
+      <div className="bgm-admin-media-preview__frame">
+        <img src={source} alt={label} style={{ transform: `rotate(${rotationDegrees}deg)` }} />
+      </div>
+      {onRotate ? <button type="button" className="bgm-secondary-button" onClick={onRotate}>Rotate 90°</button> : null}
+    </div>
+  )
+}
+
 function ContainersAdmin({ containers, onSaved, onError }: { containers: CatalogContainer[]; onSaved: () => void; onError: (message: string) => void }) {
   return <section><div className="bgm-admin-section-heading"><div><h2>Containers</h2><p>The Main Crate dimensions drive both packing and the 3D model.</p></div></div><div className="bgm-container-grid">{containers.map((container) => <ContainerEditor key={container.id} container={container} onSaved={onSaved} onError={onError} />)}</div></section>
 }
 
 function ContainerEditor({ container, onSaved, onError }: { container: CatalogContainer; onSaved: () => void; onError: (message: string) => void }) {
   const [value, setValue] = useState(container)
+  const [image, setImage] = useState<File | null>(null)
+  const [saving, setSaving] = useState(false)
   const crate = container.slug === 'main-crate'
-  return <form className="bgm-admin-card" onSubmit={async (event) => { event.preventDefault(); try { await boardGameApi.admin.updateContainer(value); onSaved() } catch (error) { onError(error instanceof Error ? error.message : 'Could not save the container.') } }}><span className="bgm-kicker">{container.packingMode}</span><h3>{container.name}</h3><AdminField label="Name"><input value={value.name} onChange={(event) => setValue({ ...value, name: event.target.value })} /></AdminField>{crate ? <>{(['innerWidthMm','innerHeightMm','innerDepthMm'] as const).map((field) => <AdminField key={field} label={`${field.replace('inner','Internal ').replace('Mm','')} (mm)`}><input type="number" min="1" value={value[field] ?? ''} onChange={(event) => setValue({ ...value, [field]: numberOrNull(event.target.value) })} /></AdminField>)}<AdminField label="Overflow limit"><input type="number" min="0" max="2" value={value.overflowLimit} onChange={(event) => setValue({ ...value, overflowLimit: Number(event.target.value) })} /></AdminField></> : <p>Contents are all active games assigned to this tote. Tote capacity is intentionally out of scope for v1.</p>}<label className="bgm-admin-checkbox"><input type="checkbox" checked={value.isActive} onChange={(event) => setValue({ ...value, isActive: event.target.checked })} /> Active</label><button className="bgm-primary-button">Save container</button></form>
+  const saveContainer = async (event: FormEvent) => {
+    event.preventDefault()
+    setSaving(true)
+    try {
+      await boardGameApi.admin.updateContainer(value)
+      if (image) {
+        const result = await boardGameApi.admin.uploadContainerImage(value.id, image)
+        setValue((current) => ({ ...current, imageUrl: result.imageUrl ?? current.imageUrl }))
+        setImage(null)
+      }
+      onSaved()
+    } catch (error) {
+      onError(error instanceof Error ? error.message : 'Could not save the container.')
+    } finally { setSaving(false) }
+  }
+
+  return (
+    <form className="bgm-admin-card" onSubmit={saveContainer}>
+      <span className="bgm-kicker">{container.packingMode}</span>
+      <h3>{container.name}</h3>
+      <AdminField label="Name"><input value={value.name} onChange={(event) => setValue({ ...value, name: event.target.value })} /></AdminField>
+      {crate ? <>
+        {(['innerWidthMm','innerHeightMm','innerDepthMm'] as const).map((field) => <AdminField key={field} label={`${field.replace('inner','Internal ').replace('Mm','')} (mm)`}><input type="number" min="1" value={value[field] ?? ''} onChange={(event) => setValue({ ...value, [field]: numberOrNull(event.target.value) })} /></AdminField>)}
+        <AdminField label="Overflow limit"><input type="number" min="0" max="2" value={value.overflowLimit} onChange={(event) => setValue({ ...value, overflowLimit: Number(event.target.value) })} /></AdminField>
+      </> : <>
+        <p>Contents are all active games assigned to this tote. Tote capacity is intentionally out of scope.</p>
+        <AdminField label="Tote artwork"><input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setImage(event.target.files?.[0] ?? null)} /></AdminField>
+        <MediaPreview file={image} currentUrl={value.imageUrl} label={`${value.name} artwork preview`} />
+        {value.imageUrl ? <button type="button" className="bgm-secondary-button" onClick={async () => { try { await boardGameApi.admin.removeContainerImage(value.id); setValue((current) => ({ ...current, imageUrl: null })); onSaved() } catch (error) { onError(error instanceof Error ? error.message : 'Could not remove the tote artwork.') } }}>Remove tote artwork</button> : null}
+      </>}
+      <label className="bgm-admin-checkbox"><input type="checkbox" checked={value.isActive} onChange={(event) => setValue({ ...value, isActive: event.target.checked })} /> Active</label>
+      <button className="bgm-primary-button" disabled={saving}>{saving ? 'Saving…' : 'Save container'}</button>
+    </form>
+  )
 }
 
 function TagsAdmin({ tags, onSaved, onError }: { tags: Tag[]; onSaved: (message: string) => void; onError: (message: string) => void }) {

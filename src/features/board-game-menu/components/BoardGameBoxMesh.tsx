@@ -5,9 +5,10 @@ import * as THREE from 'three'
 interface CoverMaterialProps {
   url: string
   fallbackColor: string
+  rotationDegrees: 0 | 90 | 180 | 270
 }
 
-function CoverMaterial({ url, fallbackColor }: CoverMaterialProps) {
+export function CoverMaterial({ url, fallbackColor, rotationDegrees }: CoverMaterialProps) {
   const [texture, setTexture] = useState<THREE.Texture | null>(null)
   const invalidate = useThree((state) => state.invalidate)
 
@@ -24,6 +25,8 @@ function CoverMaterial({ url, fallbackColor }: CoverMaterialProps) {
         }
         ownedTexture = loaded
         loaded.colorSpace = THREE.SRGBColorSpace
+        loaded.center.set(0.5, 0.5)
+        loaded.rotation = THREE.MathUtils.degToRad(rotationDegrees)
         setTexture(loaded)
         invalidate()
       },
@@ -39,7 +42,7 @@ function CoverMaterial({ url, fallbackColor }: CoverMaterialProps) {
       active = false
       ownedTexture?.dispose()
     }
-  }, [invalidate, url])
+  }, [invalidate, rotationDegrees, url])
 
   return texture ? (
     <meshBasicMaterial map={texture} color="#ffffff" />
@@ -51,12 +54,13 @@ function CoverMaterial({ url, fallbackColor }: CoverMaterialProps) {
 interface PreviewBoxProps {
   dimensions: [number, number, number]
   coverUrl: string | null
+  coverRotationDegrees: 0 | 90 | 180 | 270
   color: string
   dancing: boolean
   reducedMotion: boolean
 }
 
-export function PreviewBox({ dimensions, coverUrl, color, dancing, reducedMotion }: PreviewBoxProps) {
+export function PreviewBox({ dimensions, coverUrl, coverRotationDegrees, color, dancing, reducedMotion }: PreviewBoxProps) {
   const group = useRef<THREE.Group>(null)
 
   useFrame(({ clock }, delta) => {
@@ -75,7 +79,7 @@ export function PreviewBox({ dimensions, coverUrl, color, dancing, reducedMotion
     <group ref={group} rotation={[0.12, -0.5, 0]}>
       <mesh castShadow receiveShadow>
         <boxGeometry args={dimensions} />
-        {coverUrl ? <CoverMaterial url={coverUrl} fallbackColor={color} /> : <meshStandardMaterial color={color} roughness={0.76} />}
+        {coverUrl ? <CoverMaterial url={coverUrl} fallbackColor={color} rotationDegrees={coverRotationDegrees} /> : <meshStandardMaterial color={color} roughness={0.76} />}
       </mesh>
       <lineSegments>
         <edgesGeometry args={[new THREE.BoxGeometry(...dimensions)]} />
@@ -89,10 +93,11 @@ interface PackedBoxProps {
   dimensions: [number, number, number]
   position: [number, number, number]
   coverUrl: string | null
+  coverRotationDegrees: 0 | 90 | 180 | 270
   color: string
 }
 
-export function PackedBox({ dimensions, position, coverUrl, color }: PackedBoxProps) {
+export function PackedBox({ dimensions, position, coverUrl, coverRotationDegrees, color }: PackedBoxProps) {
   const group = useRef<THREE.Group>(null)
   const firstFrame = useRef(true)
 
@@ -112,7 +117,7 @@ export function PackedBox({ dimensions, position, coverUrl, color }: PackedBoxPr
     <group ref={group} position={position}>
       <mesh castShadow receiveShadow>
         <boxGeometry args={dimensions} />
-        {coverUrl ? <CoverMaterial url={coverUrl} fallbackColor={color} /> : <meshStandardMaterial color={color} roughness={0.72} />}
+        {coverUrl ? <CoverMaterial url={coverUrl} fallbackColor={color} rotationDegrees={coverRotationDegrees} /> : <meshStandardMaterial color={color} roughness={0.72} />}
       </mesh>
       <lineSegments>
         <edgesGeometry args={[new THREE.BoxGeometry(...dimensions)]} />

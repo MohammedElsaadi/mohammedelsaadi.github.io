@@ -24,6 +24,7 @@ interface NormalizedGame {
   maxPlayTimeMinutes: number | null
   complexity: number | null
   course: 'appetizer' | 'main' | 'dessert' | null
+  coverRotationDegrees: 0 | 90 | 180 | 270
   sortOrder: number
   tagIds: string[]
 }
@@ -60,6 +61,9 @@ async function normalizeGame(env: Env, body: Record<string, unknown>, existingCo
   let maxPlayTimeMinutes = nullableInteger(body.maxPlayTimeMinutes, 'Maximum play time', 1, 10000)
   let complexity = nullableInteger(body.complexity, 'Complexity', 1, 5)
   let course = body.course === null || body.course === '' ? null : enumValue(body.course, 'Course', ['appetizer', 'main', 'dessert'] as const)
+  const parsedCoverRotation = nullableInteger(body.coverRotationDegrees, 'Cover rotation', 0, 270)
+  if (parsedCoverRotation === null || ![0, 90, 180, 270].includes(parsedCoverRotation)) throw new HttpError(400, 'Cover rotation is invalid.')
+  const coverRotationDegrees = parsedCoverRotation as NormalizedGame['coverRotationDegrees']
   const sortOrder = sortOrderValue(body.sortOrder)
   const tagIds = stringIdArray(body.tagIds, 'Tag IDs')
 
@@ -92,14 +96,14 @@ async function normalizeGame(env: Env, body: Record<string, unknown>, existingCo
     if (rows.results.length !== tagIds.length) throw new HttpError(400, 'One or more tags do not exist.')
   }
 
-  return { name, slug, itemType, status, containerId, selectable, alwaysPacked, allowOverflow, widthMm, heightMm, depthMm, weightGrams, minPlayers, maxPlayers, minPlayTimeMinutes, maxPlayTimeMinutes, complexity, course, sortOrder, tagIds }
+  return { name, slug, itemType, status, containerId, selectable, alwaysPacked, allowOverflow, widthMm, heightMm, depthMm, weightGrams, minPlayers, maxPlayers, minPlayTimeMinutes, maxPlayTimeMinutes, complexity, course, coverRotationDegrees, sortOrder, tagIds }
 }
 
 function values(game: NormalizedGame) {
   return [
     game.slug, game.name, game.itemType, game.containerId, Number(game.selectable), Number(game.alwaysPacked), Number(game.allowOverflow),
     game.widthMm, game.heightMm, game.depthMm, game.weightGrams, game.minPlayers, game.maxPlayers, game.minPlayTimeMinutes,
-    game.maxPlayTimeMinutes, game.complexity, game.course, game.status, game.sortOrder,
+    game.maxPlayTimeMinutes, game.complexity, game.course, game.coverRotationDegrees, game.status, game.sortOrder,
   ]
 }
 
@@ -115,7 +119,7 @@ export async function createGame(env: Env, body: Record<string, unknown>) {
   const now = new Date().toISOString()
   const db = env.BOARD_GAME_DB
   await db.batch([
-    db.prepare(`INSERT INTO games (slug, name, item_type, container_id, selectable, always_packed, allow_overflow, width_mm, height_mm, depth_mm, weight_grams, min_players, max_players, min_play_time_minutes, max_play_time_minutes, complexity, course, status, sort_order, id, cover_image_key, created_at, updated_at) VALUES (${Array(23).fill('?').join(',')})`)
+    db.prepare(`INSERT INTO games (slug, name, item_type, container_id, selectable, always_packed, allow_overflow, width_mm, height_mm, depth_mm, weight_grams, min_players, max_players, min_play_time_minutes, max_play_time_minutes, complexity, course, cover_rotation_degrees, status, sort_order, id, cover_image_key, created_at, updated_at) VALUES (${Array(24).fill('?').join(',')})`)
       .bind(...values(game), id, null, now, now),
     ...game.tagIds.map((tagId) => db.prepare('INSERT INTO game_tags (game_id, tag_id) VALUES (?, ?)').bind(id, tagId)),
   ])
@@ -129,7 +133,7 @@ export async function updateGame(env: Env, gameId: string, body: Record<string, 
   await ensureUnique(env, game.slug, gameId)
   const db = env.BOARD_GAME_DB
   await db.batch([
-    db.prepare('UPDATE games SET slug=?, name=?, item_type=?, container_id=?, selectable=?, always_packed=?, allow_overflow=?, width_mm=?, height_mm=?, depth_mm=?, weight_grams=?, min_players=?, max_players=?, min_play_time_minutes=?, max_play_time_minutes=?, complexity=?, course=?, status=?, sort_order=?, updated_at=? WHERE id=?')
+    db.prepare('UPDATE games SET slug=?, name=?, item_type=?, container_id=?, selectable=?, always_packed=?, allow_overflow=?, width_mm=?, height_mm=?, depth_mm=?, weight_grams=?, min_players=?, max_players=?, min_play_time_minutes=?, max_play_time_minutes=?, complexity=?, course=?, cover_rotation_degrees=?, status=?, sort_order=?, updated_at=? WHERE id=?')
       .bind(...values(game), new Date().toISOString(), gameId),
     db.prepare('DELETE FROM game_tags WHERE game_id = ?').bind(gameId),
     ...game.tagIds.map((tagId) => db.prepare('INSERT INTO game_tags (game_id, tag_id) VALUES (?, ?)').bind(gameId, tagId)),

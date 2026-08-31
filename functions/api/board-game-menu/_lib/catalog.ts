@@ -11,6 +11,7 @@ export interface ContainerRow {
   inner_depth_mm: number | null
   overflow_limit: number
   is_active: number
+  image_key: string | null
 }
 
 export interface GameRow {
@@ -34,6 +35,7 @@ export interface GameRow {
   complexity: number | null
   course: 'appetizer' | 'main' | 'dessert' | null
   cover_image_key: string | null
+  cover_rotation_degrees: 0 | 90 | 180 | 270
   status: 'draft' | 'active' | 'archived'
   sort_order: number
 }
@@ -58,6 +60,7 @@ export function mapContainer(row: ContainerRow) {
     innerDepthMm: row.inner_depth_mm,
     overflowLimit: row.overflow_limit,
     isActive: Boolean(row.is_active),
+    imageUrl: mediaUrl(row.image_key),
   }
 }
 
@@ -83,6 +86,7 @@ export function mapGame(row: GameRow, tags: TagRow[]) {
     complexity: row.complexity,
     course: row.course,
     coverUrl: mediaUrl(row.cover_image_key),
+    coverRotationDegrees: row.cover_rotation_degrees,
     status: row.status,
     sortOrder: row.sort_order,
     tags,
@@ -91,7 +95,7 @@ export function mapGame(row: GameRow, tags: TagRow[]) {
 
 async function catalogRows(db: D1Database, includeAll: boolean) {
   const [containerResult, gameResult, tagResult, gameTagResult] = await Promise.all([
-    db.prepare(`SELECT id, slug, name, packing_mode, selection_mode, inner_width_mm, inner_height_mm, inner_depth_mm, overflow_limit, is_active FROM containers ${includeAll ? '' : 'WHERE is_active = 1'} ORDER BY slug`).all<ContainerRow>(),
+    db.prepare(`SELECT id, slug, name, packing_mode, selection_mode, inner_width_mm, inner_height_mm, inner_depth_mm, overflow_limit, is_active, image_key FROM containers ${includeAll ? '' : 'WHERE is_active = 1'} ORDER BY slug`).all<ContainerRow>(),
     db.prepare(`SELECT g.*, c.slug AS container_slug FROM games g JOIN containers c ON c.id = g.container_id ${includeAll ? '' : "WHERE g.status = 'active' AND c.is_active = 1"} ORDER BY g.sort_order, g.name COLLATE NOCASE`).all<GameRow>(),
     db.prepare('SELECT id, slug, name FROM tags ORDER BY name COLLATE NOCASE').all<TagRow>(),
     db.prepare('SELECT gt.game_id, t.id, t.slug, t.name FROM game_tags gt JOIN tags t ON t.id = gt.tag_id ORDER BY t.name COLLATE NOCASE').all<GameTagRow>(),

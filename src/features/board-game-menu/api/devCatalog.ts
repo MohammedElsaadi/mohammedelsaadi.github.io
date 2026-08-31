@@ -25,6 +25,7 @@ const baseGame: Omit<CatalogGame, 'id' | 'slug' | 'name'> = {
   complexity: 2,
   course: 'main',
   coverUrl: null,
+  coverRotationDegrees: 0,
   status: 'active',
   sortOrder: 0,
   tags: [tags[0], tags[1]],
@@ -132,6 +133,7 @@ export const developmentCatalog: CatalogResponse = {
       innerDepthMm: 400,
       overflowLimit: 2,
       isActive: true,
+      imageUrl: null,
     },
     {
       id: 'demo-tote',
@@ -144,6 +146,7 @@ export const developmentCatalog: CatalogResponse = {
       innerDepthMm: null,
       overflowLimit: 0,
       isActive: true,
+      imageUrl: null,
     },
   ],
   crateGames,

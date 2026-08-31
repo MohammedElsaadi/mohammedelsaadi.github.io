@@ -1,25 +1,28 @@
 {
+  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "mohammedelsaadi",
+  "main": "./worker/index.ts",
   "compatibility_date": "2026-03-28",
+  "vars": {
+    "PUBLIC_SITE_ORIGIN": "https://mohammedelsaadi.com"
+  },
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
   },
-  // Replace this explicit placeholder before deploying directly with Wrangler.
-  // Cloudflare Pages dashboard bindings may be used instead for Git-based deploys.
   "d1_databases": [
     {
       "binding": "BOARD_GAME_DB",
       "database_name": "board-game-menu",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
-      "preview_database_id": "local-BOARD_GAME_DB"
+      "database_id": "b16186be-2046-4f09-a89e-640bd9d8fe7e"
     }
   ],
   "r2_buckets": [
     {
       "binding": "BOARD_GAME_MEDIA",
-      "bucket_name": "board-game-menu-media",
-      "preview_bucket_name": "board-game-menu-media-local"
+      "bucket_name": "board-game-menu-media"
     }
   ]
 }

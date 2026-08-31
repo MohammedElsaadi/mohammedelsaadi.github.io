@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react'
 import type { Tag } from '../api/types'
 import { createAllFilters } from '../filters/matchesFilters'
-import type { FilterState, PlayerBucket, TimeBucket } from '../filters/types'
+import type { CourseTab, FilterState, PlayerBucket, TimeBucket } from '../filters/types'
 
 interface FilterBarProps {
   filters: FilterState
@@ -9,7 +9,12 @@ interface FilterBarProps {
   tags: Tag[]
 }
 
-const courseLabels = { appetizer: 'Appetizer', main: 'Main Course', dessert: 'Dessert' }
+const courseTabs: { value: CourseTab; label: string }[] = [
+  { value: 'all', label: 'All Games' },
+  { value: 'appetizer', label: 'Appetizer' },
+  { value: 'main', label: 'Main Course' },
+  { value: 'dessert', label: 'Dessert' },
+]
 const timeLabels: Record<TimeBucket, string> = {
   'under-30': '< 30m',
   '30-60': '30–60m',
@@ -33,71 +38,77 @@ export function FilterBar({ filters, setFilters, tags }: FilterBarProps) {
           Reset filters
         </button>
       </div>
+      <div className="bgm-course-tabs" role="tablist" aria-label="Game courses">
+        {courseTabs.map((tab) => (
+          <button
+            key={tab.value}
+            id={`bgm-course-tab-${tab.value}`}
+            type="button"
+            role="tab"
+            aria-selected={filters.courseTab === tab.value}
+            aria-controls="bgm-secondary-filters"
+            onClick={() => setFilters((current) => ({ ...current, courseTab: tab.value }))}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
       <div className="bgm-filter-groups">
-        <fieldset>
-          <legend>Course</legend>
-          <div className="bgm-chip-row">
-            {(Object.keys(courseLabels) as (keyof typeof courseLabels)[]).map((course) => (
-              <button
-                key={course}
-                type="button"
-                className="bgm-chip"
-                aria-pressed={filters.courses.includes(course)}
-                onClick={() => setFilters((current) => ({ ...current, courses: toggleValue(current.courses, course) }))}
-              >
-                {courseLabels[course]}
-              </button>
-            ))}
-          </div>
-        </fieldset>
-        <fieldset>
-          <legend>Vibe</legend>
-          <div className="bgm-chip-row">
-            {tags.map((tag) => (
-              <button
-                key={tag.id}
-                type="button"
-                className="bgm-chip"
-                aria-pressed={filters.vibeTagIds.includes(tag.id)}
-                onClick={() => setFilters((current) => ({ ...current, vibeTagIds: toggleValue(current.vibeTagIds, tag.id) }))}
-              >
-                {tag.name}
-              </button>
-            ))}
-          </div>
-        </fieldset>
-        <fieldset>
-          <legend>Time</legend>
-          <div className="bgm-chip-row">
-            {(Object.keys(timeLabels) as TimeBucket[]).map((bucket) => (
-              <button
-                key={bucket}
-                type="button"
-                className="bgm-chip"
-                aria-pressed={filters.timeBuckets.includes(bucket)}
-                onClick={() => setFilters((current) => ({ ...current, timeBuckets: toggleValue(current.timeBuckets, bucket) }))}
-              >
-                {timeLabels[bucket]}
-              </button>
-            ))}
-          </div>
-        </fieldset>
-        <fieldset>
-          <legend>Players</legend>
-          <div className="bgm-chip-row">
-            {([2, 3, 4, 5, 6] as PlayerBucket[]).map((count) => (
-              <button
-                key={count}
-                type="button"
-                className="bgm-chip"
-                aria-pressed={filters.playerCounts.includes(count)}
-                onClick={() => setFilters((current) => ({ ...current, playerCounts: toggleValue(current.playerCounts, count) }))}
-              >
-                {count === 6 ? '6+' : count}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+        <div
+          id="bgm-secondary-filters"
+          className="bgm-filter-groups__inner"
+          role="tabpanel"
+          aria-labelledby={`bgm-course-tab-${filters.courseTab}`}
+        >
+          <fieldset>
+            <legend>Vibe</legend>
+            <div className="bgm-chip-row">
+              {tags.map((tag) => (
+                <button
+                  key={tag.id}
+                  type="button"
+                  className="bgm-chip"
+                  aria-pressed={filters.vibeTagIds.includes(tag.id)}
+                  onClick={() => setFilters((current) => ({ ...current, vibeTagIds: toggleValue(current.vibeTagIds, tag.id) }))}
+                >
+                  {tag.name}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Time</legend>
+            <div className="bgm-chip-row">
+              {(Object.keys(timeLabels) as TimeBucket[]).map((bucket) => (
+                <button
+                  key={bucket}
+                  type="button"
+                  className="bgm-chip"
+                  aria-pressed={filters.timeBuckets.includes(bucket)}
+                  onClick={() => setFilters((current) => ({ ...current, timeBuckets: toggleValue(current.timeBuckets, bucket) }))}
+                >
+                  {timeLabels[bucket]}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Players</legend>
+            <div className="bgm-chip-row">
+              {([2, 3, 4, 5, 6] as PlayerBucket[]).map((count) => (
+                <button
+                  key={count}
+                  type="button"
+                  className="bgm-chip"
+                  aria-pressed={filters.playerCounts.includes(count)}
+                  onClick={() => setFilters((current) => ({ ...current, playerCounts: toggleValue(current.playerCounts, count) }))}
+                >
+                  {count === 6 ? '6+' : count}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        </div>
       </div>
     </section>
   )

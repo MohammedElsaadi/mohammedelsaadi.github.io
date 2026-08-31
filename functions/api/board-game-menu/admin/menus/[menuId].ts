@@ -12,7 +12,7 @@ export const onRequestPut: PagesFunction<Env> = async ({ env, params, request })
   try {
     const menuId = routeParam(params.menuId, 'Menu ID')
     const snapshot = await updateMenu(env, menuId, parseMenuPayload(await readJsonObject(request)))
-    const notificationSent = await notifyOwner(env, request, menuId, snapshot.gameNightDate, 'updated')
+    const notificationSent = await notifyOwner(env, request, menuId, snapshot.gameNightDate)
     return json({ saved: true, menuId, notificationSent })
   } catch (error) { return errorResponse(error) }
 }

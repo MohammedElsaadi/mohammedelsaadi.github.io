@@ -1,34 +1,45 @@
 import type { Env } from './types'
 import { formatDateOnly } from './validation'
 
-export async function notifyOwner(env: Env, request: Request, menuId: string, date: string, kind: 'saved' | 'updated') {
-  const { CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_EMAIL_API_TOKEN, BOARD_GAME_NOTIFICATION_TO, BOARD_GAME_NOTIFICATION_FROM } = env
-  if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_EMAIL_API_TOKEN || !BOARD_GAME_NOTIFICATION_TO || !BOARD_GAME_NOTIFICATION_FROM) {
-    console.info(`Board Game Menu ${kind}; notification skipped because local/server email configuration is incomplete.`)
+export function notificationText(origin: string, menuId: string, date: string) {
+  const menuUrl = `${origin.replace(/\/$/, '')}/games/board-game-menu/menu/${encodeURIComponent(menuId)}`
+  return `Board Game Menu saved for ${formatDateOnly(date)}. Open the website to see what to bring. ${menuUrl}`
+}
+
+export async function notifyOwner(env: Env, request: Request, menuId: string, date: string) {
+  const {
+    TWILIO_ACCOUNT_SID,
+    TWILIO_API_KEY_SID,
+    TWILIO_API_KEY_SECRET,
+    TWILIO_FROM_NUMBER,
+    BOARD_GAME_NOTIFICATION_TO_PHONE,
+  } = env
+  if (!TWILIO_ACCOUNT_SID || !TWILIO_API_KEY_SID || !TWILIO_API_KEY_SECRET || !TWILIO_FROM_NUMBER || !BOARD_GAME_NOTIFICATION_TO_PHONE) {
+    console.info('Board Game Menu saved; SMS notification skipped because local/server Twilio configuration is incomplete.')
     return false
   }
   const origin = env.PUBLIC_SITE_ORIGIN?.replace(/\/$/, '') || new URL(request.url).origin
-  const formattedDate = formatDateOnly(date)
+  const form = new URLSearchParams({
+    To: BOARD_GAME_NOTIFICATION_TO_PHONE,
+    From: TWILIO_FROM_NUMBER,
+    Body: notificationText(origin, menuId, date),
+  })
+  const credentials = btoa(`${TWILIO_API_KEY_SID}:${TWILIO_API_KEY_SECRET}`)
   try {
-    const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(CLOUDFLARE_ACCOUNT_ID)}/email/sending/send`, {
+    const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(TWILIO_ACCOUNT_SID)}/Messages.json`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${CLOUDFLARE_EMAIL_API_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        to: BOARD_GAME_NOTIFICATION_TO,
-        from: BOARD_GAME_NOTIFICATION_FROM,
-        subject: `🎲 Board Game Menu ${kind} — ${formattedDate}`,
-        text: `A Board Game Menu has been ${kind} for ${formattedDate}.\nOpen the website to see what to prepare.\n\n${origin}/games/board-game-menu/menu/${encodeURIComponent(menuId)}`,
-        html: `<p>A Board Game Menu has been ${kind} for <strong>${formattedDate}</strong>.</p><p><a href="${origin}/games/board-game-menu/menu/${encodeURIComponent(menuId)}">Open the website to see what to prepare.</a></p>`,
-      }),
+      headers: { Authorization: `Basic ${credentials}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: form.toString(),
     })
     if (!response.ok) {
-      console.error('Board Game Menu email request failed', response.status)
+      const errorBody = await response.json().catch(() => null) as { code?: number } | null
+      console.error('Board Game Menu SMS request failed', response.status, errorBody?.code ?? 'unknown-code')
       return false
     }
-    const body = await response.json().catch(() => null) as { success?: boolean } | null
-    return body?.success === true
+    const body = await response.json().catch(() => null) as { sid?: string } | null
+    return typeof body?.sid === 'string' && body.sid.startsWith('SM')
   } catch (error) {
-    console.error('Board Game Menu email request failed', error instanceof Error ? error.message : 'Unknown error')
+    console.error('Board Game Menu SMS request failed', error instanceof Error ? error.message : 'Unknown error')
     return false
   }
 }
