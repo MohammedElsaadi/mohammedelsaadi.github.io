@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react'
 import type { Tag } from '../api/types'
-import { createAllFilters } from '../filters/matchesFilters'
-import type { CourseTab, FilterState, PlayerBucket, TimeBucket } from '../filters/types'
+import { createDefaultFilters } from '../filters/matchesFilters'
+import { ALL_MAX_PLAYER_COUNTS, type CourseTab, type FilterState, type MaxPlayerBucket, type TimeBucket } from '../filters/types'
 
 interface FilterBarProps {
   filters: FilterState
@@ -26,7 +26,7 @@ function toggleValue<T>(values: T[], value: T) {
   return values.includes(value) ? values.filter((entry) => entry !== value) : [...values, value]
 }
 
-export function PrimaryFilterBar({ filters, setFilters, tags }: FilterBarProps) {
+export function PrimaryFilterBar({ filters, setFilters }: FilterBarProps) {
   return (
     <section className="bgm-filters" aria-label="Board-game course filters">
       <div className="bgm-filters__heading">
@@ -34,7 +34,7 @@ export function PrimaryFilterBar({ filters, setFilters, tags }: FilterBarProps) 
           <span className="bgm-kicker">Tune the table</span>
           <h2>What sounds fun?</h2>
         </div>
-        <button type="button" className="bgm-text-button" onClick={() => setFilters(createAllFilters(tags))}>
+        <button type="button" className="bgm-text-button" onClick={() => setFilters(createDefaultFilters())}>
           Reset filters
         </button>
       </div>
@@ -99,15 +99,15 @@ export function SecondaryFilterBar({ filters, setFilters, tags }: FilterBarProps
           </div>
         </fieldset>
         <fieldset>
-          <legend>Players</legend>
+          <legend>Max players</legend>
           <div className="bgm-chip-row">
-            {([2, 3, 4, 5, 6] as PlayerBucket[]).map((count) => (
+            {ALL_MAX_PLAYER_COUNTS.map((count: MaxPlayerBucket) => (
               <button
                 key={count}
                 type="button"
                 className="bgm-chip"
-                aria-pressed={filters.playerCounts.includes(count)}
-                onClick={() => setFilters((current) => ({ ...current, playerCounts: toggleValue(current.playerCounts, count) }))}
+                aria-pressed={filters.maxPlayerCounts.includes(count)}
+                onClick={() => setFilters((current) => ({ ...current, maxPlayerCounts: toggleValue(current.maxPlayerCounts, count) }))}
               >
                 {count === 6 ? '6+' : count}
               </button>
