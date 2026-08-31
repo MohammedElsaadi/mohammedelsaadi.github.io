@@ -6,10 +6,6 @@ export function notificationText(origin: string, menuId: string, date: string) {
   return `Board Game Menu saved for ${formatDateOnly(date)}. Open the website to see what to bring. ${menuUrl}`
 }
 
-export function isTwilioMessageSid(value: unknown) {
-  return typeof value === 'string' && /^(SM|MM)[0-9a-fA-F]{32}$/.test(value)
-}
-
 export async function notifyOwner(env: Env, request: Request, menuId: string, date: string) {
   const {
     TWILIO_ACCOUNT_SID,
@@ -40,8 +36,7 @@ export async function notifyOwner(env: Env, request: Request, menuId: string, da
       console.error('Board Game Menu SMS request failed', response.status, errorBody?.code ?? 'unknown-code')
       return false
     }
-    const body = await response.json().catch(() => null) as { sid?: string } | null
-    return isTwilioMessageSid(body?.sid)
+    return true
   } catch (error) {
     console.error('Board Game Menu SMS request failed', error instanceof Error ? error.message : 'Unknown error')
     return false
