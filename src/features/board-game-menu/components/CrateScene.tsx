@@ -1,9 +1,11 @@
 import { OrbitControls } from '@react-three/drei'
-import { Canvas } from '@react-three/fiber'
-import { Suspense, useMemo } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { Suspense, useCallback, useMemo, useRef } from 'react'
+import * as THREE from 'three'
 import type { CatalogContainer, CatalogGame } from '../api/types'
 import type { PackingResult } from '../packing/types'
 import { mmToScene } from '../three/dimensions'
+import { useReducedMotion } from '../three/useReducedMotion'
 import { CoverMaterial, PackedBox } from './BoardGameBoxMesh'
 
 interface CrateSceneProps {
@@ -36,13 +38,55 @@ function ToteMesh({ x, z, scale, imageUrl }: { x: number; z: number; scale: numb
   )
 }
 
-function SceneContents({ crate, tote, games, packing, toteSelected }: CrateSceneProps) {
+function SceneContents({
+  crate,
+  tote,
+  games,
+  packing,
+  toteSelected,
+  reducedMotion,
+}: CrateSceneProps & { reducedMotion: boolean }) {
   const width = mmToScene(crate.innerWidthMm ?? 1)
   const height = mmToScene(crate.innerHeightMm ?? 1)
   const depth = mmToScene(crate.innerDepthMm ?? 1)
   const wall = Math.max(Math.min(width, height, depth) * 0.018, 0.04)
+  const assembly = useRef<THREE.Group>(null)
+  const impactElapsed = useRef<number | null>(null)
   const gameMap = useMemo(() => new Map(games.map((game) => [game.id, game])), [games])
   const overflowByStack = [...packing.overflow].sort((a, b) => a.stackIndex - b.stackIndex)
+  const dropHeight = Math.max(height * 0.9, width * 0.55, 1.8)
+  const triggerImpact = useCallback(() => {
+    if (!reducedMotion) impactElapsed.current = 0
+  }, [reducedMotion])
+
+  useFrame(({ clock }, delta) => {
+    if (!assembly.current) return
+    if (reducedMotion) {
+      assembly.current.position.set(0, 0, 0)
+      assembly.current.rotation.set(0, 0, 0)
+      impactElapsed.current = null
+      return
+    }
+
+    const time = clock.getElapsedTime()
+    const dance = Math.sin(time * 2.2)
+    let shakeX = 0
+    let shakeY = 0
+    let shakeRotation = 0
+
+    if (impactElapsed.current !== null) {
+      impactElapsed.current += delta
+      const envelope = Math.max(0, 1 - impactElapsed.current / 0.32)
+      shakeX = Math.sin(impactElapsed.current * 92) * width * 0.026 * envelope
+      shakeY = Math.abs(Math.sin(impactElapsed.current * 112)) * height * 0.018 * envelope
+      shakeRotation = Math.sin(impactElapsed.current * 105) * 0.045 * envelope
+      if (envelope === 0) impactElapsed.current = null
+    }
+
+    assembly.current.position.x = dance * width * 0.018 + shakeX
+    assembly.current.position.y = Math.abs(dance) * height * 0.006 + shakeY
+    assembly.current.rotation.z = dance * 0.018 + shakeRotation
+  })
 
   return (
     <>
@@ -50,85 +94,93 @@ function SceneContents({ crate, tote, games, packing, toteSelected }: CrateScene
       <hemisphereLight args={['#fff5de', '#271b2a', 1.2]} />
       <directionalLight position={[width, height * 2, depth]} intensity={2.5} castShadow />
 
-      <group>
-        <mesh position={[0, -wall / 2, 0]} receiveShadow>
-          <boxGeometry args={[width + wall * 2, wall, depth + wall * 2]} />
-          <meshStandardMaterial color="#313842" roughness={0.78} />
-        </mesh>
-        <mesh position={[-width / 2 - wall / 2, height / 2, 0]} receiveShadow>
-          <boxGeometry args={[wall, height, depth + wall * 2]} />
-          <meshStandardMaterial color="#424b57" transparent opacity={0.56} roughness={0.72} />
-        </mesh>
-        <mesh position={[width / 2 + wall / 2, height / 2, 0]} receiveShadow>
-          <boxGeometry args={[wall, height, depth + wall * 2]} />
-          <meshStandardMaterial color="#424b57" transparent opacity={0.56} roughness={0.72} />
-        </mesh>
-        <mesh position={[0, height / 2, -depth / 2 - wall / 2]} receiveShadow>
-          <boxGeometry args={[width, height, wall]} />
-          <meshStandardMaterial color="#424b57" transparent opacity={0.48} roughness={0.72} />
-        </mesh>
-        <mesh position={[0, height / 2, depth / 2 + wall / 2]} receiveShadow>
-          <boxGeometry args={[width, height, wall]} />
-          <meshStandardMaterial color="#424b57" transparent opacity={0.28} roughness={0.72} depthWrite={false} />
-        </mesh>
+      <group ref={assembly}>
+        <group>
+          <mesh position={[0, -wall / 2, 0]} receiveShadow>
+            <boxGeometry args={[width + wall * 2, wall, depth + wall * 2]} />
+            <meshStandardMaterial color="#313842" roughness={0.78} />
+          </mesh>
+          <mesh position={[-width / 2 - wall / 2, height / 2, 0]} receiveShadow>
+            <boxGeometry args={[wall, height, depth + wall * 2]} />
+            <meshStandardMaterial color="#424b57" transparent opacity={0.56} roughness={0.72} />
+          </mesh>
+          <mesh position={[width / 2 + wall / 2, height / 2, 0]} receiveShadow>
+            <boxGeometry args={[wall, height, depth + wall * 2]} />
+            <meshStandardMaterial color="#424b57" transparent opacity={0.56} roughness={0.72} />
+          </mesh>
+          <mesh position={[0, height / 2, -depth / 2 - wall / 2]} receiveShadow>
+            <boxGeometry args={[width, height, wall]} />
+            <meshStandardMaterial color="#424b57" transparent opacity={0.48} roughness={0.72} />
+          </mesh>
+          <mesh position={[0, height / 2, depth / 2 + wall / 2]} receiveShadow>
+            <boxGeometry args={[width, height, wall]} />
+            <meshStandardMaterial color="#424b57" transparent opacity={0.28} roughness={0.72} depthWrite={false} />
+          </mesh>
+        </group>
+
+        <Suspense fallback={null}>
+          {packing.packed.map((packed) => {
+            const game = gameMap.get(packed.itemId)
+            const dimensions: [number, number, number] = [
+              mmToScene(packed.dimensionsMm.width),
+              mmToScene(packed.dimensionsMm.height),
+              mmToScene(packed.dimensionsMm.depth),
+            ]
+            const position: [number, number, number] = [
+              mmToScene(packed.positionMm.x + packed.dimensionsMm.width / 2) - width / 2,
+              mmToScene(packed.positionMm.y + packed.dimensionsMm.height / 2),
+              mmToScene(packed.positionMm.z + packed.dimensionsMm.depth / 2) - depth / 2,
+            ]
+            return (
+              <PackedBox
+                key={packed.itemId}
+                dimensions={dimensions}
+                position={position}
+                coverUrl={game?.coverUrl ?? null}
+                coverRotationDegrees={game?.coverRotationDegrees ?? 0}
+                color={colorFor(packed.itemId)}
+                dropHeight={dropHeight}
+                reducedMotion={reducedMotion}
+                onImpact={triggerImpact}
+              />
+            )
+          })}
+          {overflowByStack.map((overflow, index) => {
+            const game = gameMap.get(overflow.itemId)
+            const itemHeight = mmToScene(overflow.dimensionsMm.height)
+            const priorHeight = overflowByStack
+              .slice(0, index)
+              .reduce((sum, item) => sum + mmToScene(item.dimensionsMm.height) + wall, height)
+            const position: [number, number, number] = [0, priorHeight + itemHeight / 2 + wall, 0]
+            return (
+              <PackedBox
+                key={overflow.itemId}
+                dimensions={[
+                  mmToScene(overflow.dimensionsMm.width),
+                  itemHeight,
+                  mmToScene(overflow.dimensionsMm.depth),
+                ]}
+                position={position}
+                coverUrl={game?.coverUrl ?? null}
+                coverRotationDegrees={game?.coverRotationDegrees ?? 0}
+                color={colorFor(overflow.itemId)}
+                dropHeight={dropHeight}
+                reducedMotion={reducedMotion}
+                onImpact={triggerImpact}
+              />
+            )
+          })}
+        </Suspense>
+
+        {toteSelected ? (
+          <ToteMesh
+            x={width / 2 + Math.max(width * 0.28, 1.2)}
+            z={depth * 0.12}
+            scale={Math.max(Math.min(width, depth) * 0.28, 0.8)}
+            imageUrl={tote?.imageUrl ?? null}
+          />
+        ) : null}
       </group>
-
-      <Suspense fallback={null}>
-        {packing.packed.map((packed) => {
-          const game = gameMap.get(packed.itemId)
-          const dimensions: [number, number, number] = [
-            mmToScene(packed.dimensionsMm.width),
-            mmToScene(packed.dimensionsMm.height),
-            mmToScene(packed.dimensionsMm.depth),
-          ]
-          const position: [number, number, number] = [
-            mmToScene(packed.positionMm.x + packed.dimensionsMm.width / 2) - width / 2,
-            mmToScene(packed.positionMm.y + packed.dimensionsMm.height / 2),
-            mmToScene(packed.positionMm.z + packed.dimensionsMm.depth / 2) - depth / 2,
-          ]
-          return (
-            <PackedBox
-              key={packed.itemId}
-              dimensions={dimensions}
-              position={position}
-              coverUrl={game?.coverUrl ?? null}
-              coverRotationDegrees={game?.coverRotationDegrees ?? 0}
-              color={colorFor(packed.itemId)}
-            />
-          )
-        })}
-        {overflowByStack.map((overflow, index) => {
-          const game = gameMap.get(overflow.itemId)
-          const itemHeight = mmToScene(overflow.dimensionsMm.height)
-          const priorHeight = overflowByStack
-            .slice(0, index)
-            .reduce((sum, item) => sum + mmToScene(item.dimensionsMm.height) + wall, height)
-          const position: [number, number, number] = [0, priorHeight + itemHeight / 2 + wall, 0]
-          return (
-            <PackedBox
-              key={overflow.itemId}
-              dimensions={[
-                mmToScene(overflow.dimensionsMm.width),
-                itemHeight,
-                mmToScene(overflow.dimensionsMm.depth),
-              ]}
-              position={position}
-              coverUrl={game?.coverUrl ?? null}
-              coverRotationDegrees={game?.coverRotationDegrees ?? 0}
-              color={colorFor(overflow.itemId)}
-            />
-          )
-        })}
-      </Suspense>
-
-      {toteSelected ? (
-        <ToteMesh
-          x={width / 2 + Math.max(width * 0.28, 1.2)}
-          z={depth * 0.12}
-          scale={Math.max(Math.min(width, depth) * 0.28, 0.8)}
-          imageUrl={tote?.imageUrl ?? null}
-        />
-      ) : null}
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -wall, 0]} receiveShadow>
         <planeGeometry args={[width * 4, depth * 4]} />
@@ -148,6 +200,7 @@ function SceneContents({ crate, tote, games, packing, toteSelected }: CrateScene
 }
 
 export function CrateScene(props: CrateSceneProps) {
+  const reducedMotion = useReducedMotion()
   const width = mmToScene(props.crate.innerWidthMm ?? 1)
   const height = mmToScene(props.crate.innerHeightMm ?? 1)
   const depth = mmToScene(props.crate.innerDepthMm ?? 1)
@@ -167,7 +220,7 @@ export function CrateScene(props: CrateSceneProps) {
         fov: 42,
       }}
     >
-      <SceneContents {...props} />
+      <SceneContents {...props} reducedMotion={reducedMotion} />
     </Canvas>
   )
 }
