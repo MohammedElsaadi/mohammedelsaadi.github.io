@@ -334,7 +334,9 @@
 .bgm-admin-checks legend { width: 100%; margin-bottom: 8px; color: var(--bgm-muted); font-size: .7rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
 .bgm-admin-checks label,
 .bgm-admin-checkbox { display: inline-flex; align-items: center; gap: 7px; font-size: .85rem; }
-.bgm-admin-media-preview { display: flex; align-items: center; gap: 14px; }
+.bgm-admin-media-previews { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.bgm-admin-media-preview { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; }
+.bgm-admin-media-preview > strong { flex-basis: 100%; color: var(--bgm-muted); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
 .bgm-admin-media-preview__frame { width: 160px; height: 160px; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--bgm-line); border-radius: 16px; background: var(--bgm-paper); }
 .bgm-admin-media-preview img { width: 78%; height: 78%; object-fit: contain; transition: transform .2s ease; }
 .bgm-admin-form-actions { display: flex; justify-content: end; gap: 10px; }
@@ -432,7 +434,8 @@
   .bgm-saved-grid .bgm-packing-status { grid-column: 1; grid-row: auto; }
   .bgm-admin-hero { align-items: flex-start; flex-direction: column; }
   .bgm-admin-form-grid,
-  .bgm-container-grid { grid-template-columns: 1fr; }
+  .bgm-container-grid,
+  .bgm-admin-media-previews { grid-template-columns: 1fr; }
   .bgm-admin-tabs { overflow-x: auto; }
   .bgm-access-note { max-width: none; }
 }

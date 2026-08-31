@@ -14,6 +14,7 @@ export interface CrateDimensions {
   heightMm: number
   depthMm: number
   overflowLimit: number
+  heightToleranceMm: number
 }
 
 export interface DimensionsMm {
@@ -40,6 +41,7 @@ export interface PackingResult {
   success: boolean
   packed: PackedTransform[]
   overflow: OverflowTransform[]
+  heightToleranceUsedMm?: number
   rejectedReason?:
     | 'TOO_MANY_OVERFLOW'
     | 'INVALID_CRATE'

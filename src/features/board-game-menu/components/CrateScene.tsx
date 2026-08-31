@@ -122,11 +122,9 @@ function SceneContents({
         <Suspense fallback={null}>
           {packing.packed.map((packed) => {
             const game = gameMap.get(packed.itemId)
-            const dimensions: [number, number, number] = [
-              mmToScene(packed.dimensionsMm.width),
-              mmToScene(packed.dimensionsMm.height),
-              mmToScene(packed.dimensionsMm.depth),
-            ]
+            const dimensions: [number, number, number] = game?.widthMm && game.heightMm && game.depthMm
+              ? [mmToScene(game.widthMm), mmToScene(game.heightMm), mmToScene(game.depthMm)]
+              : [mmToScene(packed.dimensionsMm.width), mmToScene(packed.dimensionsMm.height), mmToScene(packed.dimensionsMm.depth)]
             const position: [number, number, number] = [
               mmToScene(packed.positionMm.x + packed.dimensionsMm.width / 2) - width / 2,
               mmToScene(packed.positionMm.y + packed.dimensionsMm.height / 2),
@@ -137,7 +135,9 @@ function SceneContents({
                 key={packed.itemId}
                 dimensions={dimensions}
                 position={position}
+                orientation={packed.rotation}
                 coverUrl={game?.coverUrl ?? null}
+                sideUrl={game?.sideUrl ?? null}
                 coverRotationDegrees={game?.coverRotationDegrees ?? 0}
                 color={colorFor(packed.itemId)}
                 dropHeight={dropHeight}
@@ -149,6 +149,9 @@ function SceneContents({
           {overflowByStack.map((overflow, index) => {
             const game = gameMap.get(overflow.itemId)
             const itemHeight = mmToScene(overflow.dimensionsMm.height)
+            const dimensions: [number, number, number] = game?.widthMm && game.heightMm && game.depthMm
+              ? [mmToScene(game.widthMm), mmToScene(game.heightMm), mmToScene(game.depthMm)]
+              : [mmToScene(overflow.dimensionsMm.width), itemHeight, mmToScene(overflow.dimensionsMm.depth)]
             const priorHeight = overflowByStack
               .slice(0, index)
               .reduce((sum, item) => sum + mmToScene(item.dimensionsMm.height) + wall, height)
@@ -156,13 +159,11 @@ function SceneContents({
             return (
               <PackedBox
                 key={overflow.itemId}
-                dimensions={[
-                  mmToScene(overflow.dimensionsMm.width),
-                  itemHeight,
-                  mmToScene(overflow.dimensionsMm.depth),
-                ]}
+                dimensions={dimensions}
                 position={position}
+                orientation={overflow.rotation}
                 coverUrl={game?.coverUrl ?? null}
+                sideUrl={game?.sideUrl ?? null}
                 coverRotationDegrees={game?.coverRotationDegrees ?? 0}
                 color={colorFor(overflow.itemId)}
                 dropHeight={dropHeight}
@@ -204,8 +205,9 @@ export function CrateScene(props: CrateSceneProps) {
   const reducedMotion = useReducedMotion()
   const width = mmToScene(props.crate.innerWidthMm ?? 1)
   const height = mmToScene(props.crate.innerHeightMm ?? 1)
+  const effectiveHeight = height + mmToScene(props.crate.heightToleranceMm)
   const depth = mmToScene(props.crate.innerDepthMm ?? 1)
-  const maximum = Math.max(width, height, depth)
+  const maximum = Math.max(width, effectiveHeight, depth)
   const horizontalExtent = props.toteSelected ? Math.max(width * 1.45, width + 2.4) : width
   const overflowHeight = props.packing.overflow.reduce(
     (sum, item) => sum + mmToScene(item.dimensionsMm.height),

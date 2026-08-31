@@ -53,6 +53,7 @@ function BoardGameMenuSaved() {
       heightMm: crate.innerHeightMm,
       depthMm: crate.innerDepthMm,
       overflowLimit: crate.overflowLimit,
+      heightToleranceMm: crate.heightToleranceMm,
     })
   }, [menu])
 
@@ -60,11 +61,10 @@ function BoardGameMenuSaved() {
   if (!menu || !catalog) return <main className="bgm-page-state">Opening the saved menu…</main>
 
   if (editing) {
-    const toteId = catalog.containers.find((container) => container.slug === 'board-game-tote')?.id
     const initialDraft: PickerDraft = {
       gameNightDate: menu.gameNightDate,
       selectedCrateGameIds: menu.selectedCrateGameIds,
-      isToteSelected: Boolean(toteId && menu.selectedContainerIds.includes(toteId)),
+      selectedToteGameIds: menu.selectedToteGameIds,
     }
     return (
       <BoardGamePicker

@@ -10,7 +10,7 @@ const game: CatalogGame = {
   id: 'demo', slug: 'demo', name: 'Demo', itemType: 'game', containerId: 'crate', containerSlug: 'main-crate',
   selectable: true, alwaysPacked: false, allowOverflow: true, widthMm: 100, heightMm: 30, depthMm: 100,
   weightGrams: null, minPlayers: 2, maxPlayers: 4, minPlayTimeMinutes: 35, maxPlayTimeMinutes: 55,
-  complexity: 2, course: 'main', coverUrl: null, coverRotationDegrees: 0, status: 'active', sortOrder: 0, tags,
+  complexity: 2, course: 'main', coverUrl: null, sideUrl: null, coverRotationDegrees: 0, status: 'active', sortOrder: 0, tags,
 }
 
 describe('matchesFilters', () => {

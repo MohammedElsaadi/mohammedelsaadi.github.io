@@ -16,13 +16,16 @@ export function CratePanel({ crate, tote, games, packing, selectedCount, toteSel
     crate?.innerWidthMm && crate.innerHeightMm && crate.innerDepthMm,
   )
   const overflowCount = packing.success ? packing.overflow.length : 0
+  const heightToleranceUsed = packing.success ? packing.heightToleranceUsedMm ?? 0 : 0
   const status =
     selectedCount === 0
       ? toteSelected
         ? 'The tote is ready to go.'
         : 'Choose a box and watch the crate fill.'
       : overflowCount === 0
-        ? 'Everything fits inside.'
+        ? heightToleranceUsed > 0
+          ? `Fits using ${heightToleranceUsed} mm above the crate rim.`
+          : 'Everything fits inside.'
         : `${overflowCount} game${overflowCount === 1 ? '' : 's'} stacked on top.`
 
   return (

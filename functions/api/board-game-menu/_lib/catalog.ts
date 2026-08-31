@@ -10,6 +10,7 @@ export interface ContainerRow {
   inner_height_mm: number | null
   inner_depth_mm: number | null
   overflow_limit: number
+  height_tolerance_mm: number
   is_active: number
   image_key: string | null
 }
@@ -35,6 +36,7 @@ export interface GameRow {
   complexity: number | null
   course: 'appetizer' | 'main' | 'dessert' | null
   cover_image_key: string | null
+  side_image_key: string | null
   cover_rotation_degrees: 0 | 90 | 180 | 270
   status: 'draft' | 'active' | 'archived'
   sort_order: number
@@ -59,6 +61,7 @@ export function mapContainer(row: ContainerRow) {
     innerHeightMm: row.inner_height_mm,
     innerDepthMm: row.inner_depth_mm,
     overflowLimit: row.overflow_limit,
+    heightToleranceMm: row.height_tolerance_mm,
     isActive: Boolean(row.is_active),
     imageUrl: mediaUrl(row.image_key),
   }
@@ -86,6 +89,7 @@ export function mapGame(row: GameRow, tags: TagRow[]) {
     complexity: row.complexity,
     course: row.course,
     coverUrl: mediaUrl(row.cover_image_key),
+    sideUrl: mediaUrl(row.side_image_key),
     coverRotationDegrees: row.cover_rotation_degrees,
     status: row.status,
     sortOrder: row.sort_order,
@@ -95,7 +99,7 @@ export function mapGame(row: GameRow, tags: TagRow[]) {
 
 async function catalogRows(db: D1Database, includeAll: boolean) {
   const [containerResult, gameResult, tagResult, gameTagResult] = await Promise.all([
-    db.prepare(`SELECT id, slug, name, packing_mode, selection_mode, inner_width_mm, inner_height_mm, inner_depth_mm, overflow_limit, is_active, image_key FROM containers ${includeAll ? '' : 'WHERE is_active = 1'} ORDER BY slug`).all<ContainerRow>(),
+    db.prepare(`SELECT id, slug, name, packing_mode, selection_mode, inner_width_mm, inner_height_mm, inner_depth_mm, overflow_limit, height_tolerance_mm, is_active, image_key FROM containers ${includeAll ? '' : 'WHERE is_active = 1'} ORDER BY slug`).all<ContainerRow>(),
     db.prepare(`SELECT g.*, c.slug AS container_slug FROM games g JOIN containers c ON c.id = g.container_id ${includeAll ? '' : "WHERE g.status = 'active' AND c.is_active = 1"} ORDER BY g.sort_order, g.name COLLATE NOCASE`).all<GameRow>(),
     db.prepare('SELECT id, slug, name FROM tags ORDER BY name COLLATE NOCASE').all<TagRow>(),
     db.prepare('SELECT gt.game_id, t.id, t.slug, t.name FROM game_tags gt JOIN tags t ON t.id = gt.tag_id ORDER BY t.name COLLATE NOCASE').all<GameTagRow>(),
@@ -114,7 +118,7 @@ export async function readPublicCatalog(env: Env) {
   return {
     containers: rows.containers,
     crateGames: rows.games.filter((game) => game.containerSlug === 'main-crate' && game.itemType === 'game' && game.selectable && !game.alwaysPacked),
-    toteGames: rows.games.filter((game) => game.containerSlug === 'board-game-tote' && game.itemType === 'game'),
+    toteGames: rows.games.filter((game) => game.containerSlug === 'board-game-tote' && game.itemType === 'game' && game.selectable),
     requiredCrateItems: rows.games.filter((game) => game.containerSlug === 'main-crate' && game.alwaysPacked),
     tags: rows.tags,
   }

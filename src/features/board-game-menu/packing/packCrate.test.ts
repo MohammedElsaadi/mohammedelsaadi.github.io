@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { packCrate } from './packCrate'
 import type { CrateDimensions, PackedTransform, PackingItem } from './types'
 
-const crate: CrateDimensions = { widthMm: 10, heightMm: 10, depthMm: 10, overflowLimit: 2 }
+const crate: CrateDimensions = { widthMm: 10, heightMm: 10, depthMm: 10, overflowLimit: 2, heightToleranceMm: 0 }
 const item = (id: string, dimensions: [number, number, number], extra: Partial<PackingItem> = {}): PackingItem => ({
   id,
   widthMm: dimensions[0],
@@ -97,5 +97,19 @@ describe('packCrate', () => {
     const reduced = packCrate([item('b', [10, 10, 10])], crate)
     expect(reduced.overflow).toHaveLength(0)
     expect(reduced.packed[0].itemId).toBe('b')
+  })
+
+  it('uses configurable invisible height above the physical crate rim', () => {
+    const withoutTolerance = packCrate([item('tall', [10, 12, 10], { canOverflow: false })], crate)
+    expect(withoutTolerance.success).toBe(false)
+
+    const withTolerance = packCrate(
+      [item('tall', [10, 12, 10], { canOverflow: false })],
+      { ...crate, heightToleranceMm: 2 },
+    )
+    expect(withTolerance.success).toBe(true)
+    expect(withTolerance.packed).toHaveLength(1)
+    expect(withTolerance.heightToleranceUsedMm).toBe(2)
+    expect(withTolerance.packed[0].positionMm.y + withTolerance.packed[0].dimensionsMm.height).toBe(12)
   })
 })

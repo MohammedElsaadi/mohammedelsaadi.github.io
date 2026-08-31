@@ -199,7 +199,9 @@ export function packCrate(inputItems: PackingItem[], crate: CrateDimensions): Pa
     !validPositive(crate.heightMm) ||
     !validPositive(crate.depthMm) ||
     !Number.isInteger(crate.overflowLimit) ||
-    crate.overflowLimit < 0
+    crate.overflowLimit < 0 ||
+    !Number.isInteger(crate.heightToleranceMm) ||
+    crate.heightToleranceMm < 0
   ) {
     return { success: false, packed: [], overflow: [], rejectedReason: 'INVALID_CRATE' }
   }
@@ -217,8 +219,12 @@ export function packCrate(inputItems: PackingItem[], crate: CrateDimensions): Pa
   }
 
   const items = [...inputItems].sort((a, b) => a.id.localeCompare(b.id))
+  const effectiveCrate = {
+    ...crate,
+    heightMm: crate.heightMm + crate.heightToleranceMm,
+  }
   const requiredItems = items.filter((item) => item.required || !item.canOverflow)
-  if (!tryPackInternal(requiredItems, crate)) {
+  if (!tryPackInternal(requiredItems, effectiveCrate)) {
     return {
       success: false,
       packed: [],
@@ -235,7 +241,7 @@ export function packCrate(inputItems: PackingItem[], crate: CrateDimensions): Pa
       const overflowIds = new Set(overflowItems.map((item) => item.id))
       const internal = tryPackInternal(
         items.filter((item) => !overflowIds.has(item.id)),
-        crate,
+        effectiveCrate,
       )
       if (!internal) return []
 
@@ -266,7 +272,12 @@ export function packCrate(inputItems: PackingItem[], crate: CrateDimensions): Pa
     )[0]
 
     if (best) {
-      return { success: true, packed: best.internal.packed, overflow: best.overflow }
+      return {
+        success: true,
+        packed: best.internal.packed,
+        overflow: best.overflow,
+        heightToleranceUsedMm: Math.max(0, best.internal.maxHeight - crate.heightMm),
+      }
     }
   }
 
