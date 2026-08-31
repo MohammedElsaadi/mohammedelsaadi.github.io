@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest'
-import { isTwilioMessageSid, notificationText } from './notify'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { notificationText, notifyOwner } from './notify'
+import type { Env } from './types'
 
 describe('notificationText', () => {
   it('formats the requested SMS with a direct saved-menu link', () => {
@@ -9,14 +10,20 @@ describe('notificationText', () => {
   })
 })
 
-describe('isTwilioMessageSid', () => {
-  it('accepts Twilio SMS and MMS message SID prefixes', () => {
-    expect(isTwilioMessageSid(`SM${'a'.repeat(32)}`)).toBe(true)
-    expect(isTwilioMessageSid(`MM${'0'.repeat(32)}`)).toBe(true)
-  })
+describe('notifyOwner', () => {
+  afterEach(() => vi.unstubAllGlobals())
 
-  it('rejects missing or malformed message SIDs', () => {
-    expect(isTwilioMessageSid(undefined)).toBe(false)
-    expect(isTwilioMessageSid(`SM${'z'.repeat(32)}`)).toBe(false)
+  it('reports success when Twilio accepts the request, regardless of response-body shape', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('accepted', { status: 201 })))
+    const env = {
+      TWILIO_ACCOUNT_SID: `AC${'a'.repeat(32)}`,
+      TWILIO_API_KEY_SID: `SK${'b'.repeat(32)}`,
+      TWILIO_API_KEY_SECRET: 'secret',
+      TWILIO_FROM_NUMBER: '+12265550100',
+      BOARD_GAME_NOTIFICATION_TO_PHONE: '+14165550100',
+      PUBLIC_SITE_ORIGIN: 'https://mohammedelsaadi.com',
+    } as unknown as Env
+
+    await expect(notifyOwner(env, new Request('https://mohammedelsaadi.com/api/board-game-menu/menus'), 'menu-123', '2026-09-05')).resolves.toBe(true)
   })
 })
