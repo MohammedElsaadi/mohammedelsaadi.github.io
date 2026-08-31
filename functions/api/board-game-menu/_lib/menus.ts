@@ -1,6 +1,5 @@
 import { readAdminCatalog } from './catalog'
 import { HttpError } from './http'
-import { createEditToken, hashToken } from './tokens'
 import type { Env, InclusionSource, MenuPayload, SelectionSnapshot } from './types'
 import { requireDateOnly, stringIdArray, titleForDate } from './validation'
 
@@ -8,7 +7,6 @@ interface MenuRow {
   id: string
   game_night_date: string
   title: string
-  edit_token_hash: string | null
   created_at: string
   updated_at: string
 }
@@ -83,15 +81,13 @@ export async function createMenu(env: Env, payload: MenuPayload) {
   if (existing) throw new HttpError(409, 'A menu already exists for that game-night date.', { existingMenuId: existing.id })
   const snapshot = await resolveSelection(env, payload)
   const id = crypto.randomUUID()
-  const editToken = createEditToken()
-  const editTokenHash = await hashToken(editToken)
   const now = new Date().toISOString()
   await db.batch([
-    db.prepare('INSERT INTO menus (id, game_night_date, title, edit_token_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)')
-      .bind(id, snapshot.gameNightDate, snapshot.title, editTokenHash, now, now),
+    db.prepare('INSERT INTO menus (id, game_night_date, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)')
+      .bind(id, snapshot.gameNightDate, snapshot.title, now, now),
     ...snapshotStatements(db, id, snapshot),
   ])
-  return { id, editToken, snapshot }
+  return { id, snapshot }
 }
 
 export async function updateMenu(env: Env, menuId: string, payload: MenuPayload) {
@@ -141,12 +137,6 @@ export async function readMenu(env: Env, menuId: string) {
 export async function listMenus(env: Env) {
   const rows = await env.BOARD_GAME_DB.prepare('SELECT id FROM menus ORDER BY game_night_date DESC').all<{ id: string }>()
   return Promise.all(rows.results.map((row) => readMenu(env, row.id)))
-}
-
-export async function getMenuTokenHash(env: Env, menuId: string) {
-  const menu = await env.BOARD_GAME_DB.prepare('SELECT edit_token_hash FROM menus WHERE id = ?').bind(menuId).first<{ edit_token_hash: string | null }>()
-  if (!menu) throw new HttpError(404, 'Saved menu not found.')
-  return menu.edit_token_hash
 }
 
 export async function deleteMenu(env: Env, menuId: string) {

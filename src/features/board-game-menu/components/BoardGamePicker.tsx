@@ -8,14 +8,14 @@ import type { CrateDimensions, PackingItem, PackingResult } from '../packing/typ
 import {
   CREATE_DRAFT_KEY,
   editDraftKey,
-  editTokenKey,
   readStoredValue,
   removeStoredValue,
   writeStoredValue,
 } from '../state/localStorage'
 import { isValidDateOnly, todayDateOnly } from '../utils/dates'
 import { CratePanel } from './CratePanel'
-import { FilterBar } from './FilterBar'
+import { CatalogPreviewCanvas } from './CatalogPreviewCanvas'
+import { PrimaryFilterBar, SecondaryFilterBar } from './FilterBar'
 import { Game3DCard } from './Game3DCard'
 import { ToteBundleCard } from './ToteBundleCard'
 
@@ -112,6 +112,7 @@ export function BoardGamePicker({
   const [saving, setSaving] = useState(false)
   const [duplicateMenuId, setDuplicateMenuId] = useState<string | null>(null)
   const rejectTimer = useRef<number | null>(null)
+  const browserRef = useRef<HTMLElement>(null)
 
   const crate = configuredCrate(catalog)
   const tote = catalog.containers.find((container) => container.slug === 'board-game-tote')
@@ -193,9 +194,8 @@ export function BoardGamePicker({
     const payload = { gameNightDate, selectedCrateGameIds: selectedIds, selectedContainerIds }
     try {
       const result = mode === 'edit' && menuId
-        ? await boardGameApi.updateMenu(menuId, payload, readStoredValue<string>(editTokenKey(menuId)) ?? '')
+        ? await boardGameApi.updateMenu(menuId, payload)
         : await boardGameApi.createMenu(payload)
-      if (result.editToken) writeStoredValue(editTokenKey(result.menuId), result.editToken)
       removeStoredValue(storageKey)
       if (mode === 'edit' && onSaved) {
         await onSaved()
@@ -209,8 +209,6 @@ export function BoardGamePicker({
       if (error instanceof ApiRequestError && error.status === 409 && error.body.existingMenuId) {
         setDuplicateMenuId(error.body.existingMenuId)
         setMessage('A menu already exists for that game-night date.')
-      } else if (error instanceof ApiRequestError && error.status === 403) {
-        setMessage('This browser no longer has permission to edit that saved menu.')
       } else {
         setMessage('Could not save the menu. Your local draft is safe; please try again.')
       }
@@ -222,14 +220,14 @@ export function BoardGamePicker({
   return (
     <main className="bgm-picker">
       <header className="bgm-picker__header">
+        <Link to="/games" className="bgm-back-link">← Games & experiments</Link>
         <div className="bgm-picker__intro">
-          <Link to="/games" className="bgm-back-link">← Games & experiments</Link>
           <h1>Board Game Menu</h1>
           <p>Build the game-night menu and watch the real crate fill up.</p>
         </div>
         <div className="bgm-picker__date">
           <label htmlFor="game-night-date">Game night</label>
-          <input id="game-night-date" type="date" value={gameNightDate} onChange={(event) => updateDate(event.target.value)} />
+          <input id="game-night-date" type="date" value={gameNightDate} disabled={mode === 'edit'} onChange={(event) => updateDate(event.target.value)} />
         </div>
       </header>
 
@@ -237,7 +235,7 @@ export function BoardGamePicker({
         {developmentMode ? (
           <div className="bgm-dev-banner">Previewing fictional development data. Run the full local stack to use D1.</div>
         ) : null}
-        <FilterBar filters={filters} setFilters={setFilters} tags={catalog.tags} />
+        <PrimaryFilterBar filters={filters} setFilters={setFilters} tags={catalog.tags} />
         {message ? (
           <div className="bgm-message" role="status">
             <span>{message}</span>
@@ -255,7 +253,11 @@ export function BoardGamePicker({
           selectedCount={selectedIds.length}
           toteSelected={toteSelected}
         />
-        <section className="bgm-browser" aria-label="Board-game collection">
+        <section ref={browserRef} className="bgm-browser" aria-label="Board-game collection">
+          {catalog.crateGames.length > 0 ? <CatalogPreviewCanvas scrollRoot={browserRef} /> : null}
+          <div className="bgm-browser__filters">
+            <SecondaryFilterBar filters={filters} setFilters={setFilters} tags={catalog.tags} />
+          </div>
           <div className="bgm-game-grid">
             {tote && catalog.toteGames.length > 0 ? (
               <ToteBundleCard

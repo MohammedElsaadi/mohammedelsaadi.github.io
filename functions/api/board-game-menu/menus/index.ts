@@ -8,7 +8,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     const payload = parseMenuPayload(await readJsonObject(request))
     const result = await createMenu(env, payload)
     const notificationSent = await notifyOwner(env, request, result.id, result.snapshot.gameNightDate)
-    return json({ saved: true, menuId: result.id, editToken: result.editToken, notificationSent }, 201)
+    return json({ saved: true, menuId: result.id, notificationSent }, 201)
   } catch (error) {
     return errorResponse(error)
   }

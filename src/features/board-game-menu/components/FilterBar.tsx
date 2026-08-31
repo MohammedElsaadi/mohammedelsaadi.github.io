@@ -26,9 +26,9 @@ function toggleValue<T>(values: T[], value: T) {
   return values.includes(value) ? values.filter((entry) => entry !== value) : [...values, value]
 }
 
-export function FilterBar({ filters, setFilters, tags }: FilterBarProps) {
+export function PrimaryFilterBar({ filters, setFilters, tags }: FilterBarProps) {
   return (
-    <section className="bgm-filters" aria-label="Board-game filters">
+    <section className="bgm-filters" aria-label="Board-game course filters">
       <div className="bgm-filters__heading">
         <div>
           <span className="bgm-kicker">Tune the table</span>
@@ -53,62 +53,67 @@ export function FilterBar({ filters, setFilters, tags }: FilterBarProps) {
           </button>
         ))}
       </div>
-      <div className="bgm-filter-groups">
-        <div
-          id="bgm-secondary-filters"
-          className="bgm-filter-groups__inner"
-          role="tabpanel"
-          aria-labelledby={`bgm-course-tab-${filters.courseTab}`}
-        >
-          <fieldset>
-            <legend>Vibe</legend>
-            <div className="bgm-chip-row">
-              {tags.map((tag) => (
-                <button
-                  key={tag.id}
-                  type="button"
-                  className="bgm-chip"
-                  aria-pressed={filters.vibeTagIds.includes(tag.id)}
-                  onClick={() => setFilters((current) => ({ ...current, vibeTagIds: toggleValue(current.vibeTagIds, tag.id) }))}
-                >
-                  {tag.name}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend>Time</legend>
-            <div className="bgm-chip-row">
-              {(Object.keys(timeLabels) as TimeBucket[]).map((bucket) => (
-                <button
-                  key={bucket}
-                  type="button"
-                  className="bgm-chip"
-                  aria-pressed={filters.timeBuckets.includes(bucket)}
-                  onClick={() => setFilters((current) => ({ ...current, timeBuckets: toggleValue(current.timeBuckets, bucket) }))}
-                >
-                  {timeLabels[bucket]}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend>Players</legend>
-            <div className="bgm-chip-row">
-              {([2, 3, 4, 5, 6] as PlayerBucket[]).map((count) => (
-                <button
-                  key={count}
-                  type="button"
-                  className="bgm-chip"
-                  aria-pressed={filters.playerCounts.includes(count)}
-                  onClick={() => setFilters((current) => ({ ...current, playerCounts: toggleValue(current.playerCounts, count) }))}
-                >
-                  {count === 6 ? '6+' : count}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-        </div>
+    </section>
+  )
+}
+
+export function SecondaryFilterBar({ filters, setFilters, tags }: FilterBarProps) {
+  return (
+    <section className="bgm-filter-groups" aria-label="Vibe, time and player filters">
+      <div
+        id="bgm-secondary-filters"
+        className="bgm-filter-groups__inner"
+        role="tabpanel"
+        aria-labelledby={`bgm-course-tab-${filters.courseTab}`}
+      >
+        <fieldset>
+          <legend>Vibe</legend>
+          <div className="bgm-chip-row">
+            {tags.map((tag) => (
+              <button
+                key={tag.id}
+                type="button"
+                className="bgm-chip"
+                aria-pressed={filters.vibeTagIds.includes(tag.id)}
+                onClick={() => setFilters((current) => ({ ...current, vibeTagIds: toggleValue(current.vibeTagIds, tag.id) }))}
+              >
+                {tag.name}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Time</legend>
+          <div className="bgm-chip-row">
+            {(Object.keys(timeLabels) as TimeBucket[]).map((bucket) => (
+              <button
+                key={bucket}
+                type="button"
+                className="bgm-chip"
+                aria-pressed={filters.timeBuckets.includes(bucket)}
+                onClick={() => setFilters((current) => ({ ...current, timeBuckets: toggleValue(current.timeBuckets, bucket) }))}
+              >
+                {timeLabels[bucket]}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Players</legend>
+          <div className="bgm-chip-row">
+            {([2, 3, 4, 5, 6] as PlayerBucket[]).map((count) => (
+              <button
+                key={count}
+                type="button"
+                className="bgm-chip"
+                aria-pressed={filters.playerCounts.includes(count)}
+                onClick={() => setFilters((current) => ({ ...current, playerCounts: toggleValue(current.playerCounts, count) }))}
+              >
+                {count === 6 ? '6+' : count}
+              </button>
+            ))}
+          </div>
+        </fieldset>
       </div>
     </section>
   )

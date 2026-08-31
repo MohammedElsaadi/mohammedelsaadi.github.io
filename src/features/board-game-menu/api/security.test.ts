@@ -1,14 +1,29 @@
-import { describe, expect, it } from 'vitest'
-import { constantTimeEqual, createEditToken, hashToken } from '../../../../functions/api/board-game-menu/_lib/tokens'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { boardGameApi } from './boardGameApi'
 
-describe('menu edit tokens', () => {
-  it('generates a one-time raw token and hashes it before persistence', async () => {
-    const token = createEditToken()
-    const hash = await hashToken(token)
-    expect(token).toHaveLength(43)
-    expect(hash).toMatch(/^[a-f0-9]{64}$/)
-    expect(hash).not.toContain(token)
-    expect(constantTimeEqual(hash, await hashToken(token))).toBe(true)
-    expect(constantTimeEqual(hash, await hashToken(`${token}x`))).toBe(false)
+afterEach(() => vi.unstubAllGlobals())
+
+describe('public menu edits', () => {
+  it('updates a saved menu without requiring a browser-local edit token', async () => {
+    const fetchMock = vi.fn(async (...requestArgs: [string, RequestInit?]) => {
+      void requestArgs
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ saved: true, menuId: 'menu-1', notificationSent: true }),
+      }
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await boardGameApi.updateMenu('menu-1', {
+      gameNightDate: '2026-09-05',
+      selectedCrateGameIds: ['game-1'],
+      selectedContainerIds: ['crate-1'],
+    })
+
+    const request = fetchMock.mock.calls[0]?.[1]
+    expect(request).toBeDefined()
+    expect(request?.headers).toEqual({ 'Content-Type': 'application/json' })
+    expect(request?.headers).not.toHaveProperty('X-Menu-Edit-Token')
   })
 })

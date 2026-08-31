@@ -1,3 +1,4 @@
+import { Edges } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
@@ -6,9 +7,11 @@ interface CoverMaterialProps {
   url: string
   fallbackColor: string
   rotationDegrees: 0 | 90 | 180 | 270
+  muted?: boolean
+  opacity?: number
 }
 
-export function CoverMaterial({ url, fallbackColor, rotationDegrees }: CoverMaterialProps) {
+export function CoverMaterial({ url, fallbackColor, rotationDegrees, muted = false, opacity = 1 }: CoverMaterialProps) {
   const [texture, setTexture] = useState<THREE.Texture | null>(null)
   const invalidate = useThree((state) => state.invalidate)
 
@@ -45,9 +48,21 @@ export function CoverMaterial({ url, fallbackColor, rotationDegrees }: CoverMate
   }, [invalidate, rotationDegrees, url])
 
   return texture ? (
-    <meshBasicMaterial map={texture} color="#ffffff" />
+    <meshBasicMaterial
+      map={texture}
+      color={muted ? '#a9a2a5' : '#ffffff'}
+      transparent={opacity < 1}
+      opacity={opacity}
+      depthWrite={opacity === 1}
+    />
   ) : (
-    <meshStandardMaterial color={fallbackColor} roughness={0.76} />
+    <meshStandardMaterial
+      color={muted ? '#918b8e' : fallbackColor}
+      roughness={0.76}
+      transparent={opacity < 1}
+      opacity={opacity}
+      depthWrite={opacity === 1}
+    />
   )
 }
 
@@ -58,33 +73,68 @@ interface PreviewBoxProps {
   color: string
   dancing: boolean
   reducedMotion: boolean
+  muted?: boolean
+  opacity?: number
 }
 
-export function PreviewBox({ dimensions, coverUrl, coverRotationDegrees, color, dancing, reducedMotion }: PreviewBoxProps) {
+export function PreviewBox({
+  dimensions,
+  coverUrl,
+  coverRotationDegrees,
+  color,
+  dancing,
+  reducedMotion,
+  muted = false,
+  opacity = 1,
+}: PreviewBoxProps) {
   const group = useRef<THREE.Group>(null)
+  const danceTime = useRef(0)
+  const invalidate = useThree((state) => state.invalidate)
 
-  useFrame(({ clock }, delta) => {
+  useEffect(() => invalidate(), [dancing, invalidate, muted, opacity])
+
+  useFrame((_, delta) => {
     if (!group.current) return
     const active = dancing && !reducedMotion
-    const time = clock.getElapsedTime()
+    if (active) danceTime.current += delta
+    const time = danceTime.current
     const yaw = -0.5 + (active ? Math.sin(time * 5) * 0.14 : 0)
     const roll = active ? Math.sin(time * 7) * 0.05 : 0
     const bob = active ? Math.abs(Math.sin(time * 5)) * 0.1 : 0
     group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, yaw, 12, delta)
     group.current.rotation.z = THREE.MathUtils.damp(group.current.rotation.z, roll, 12, delta)
     group.current.position.y = THREE.MathUtils.damp(group.current.position.y, bob, 12, delta)
+
+    const settling = Math.abs(group.current.rotation.y + 0.5) > 0.002
+      || Math.abs(group.current.rotation.z) > 0.002
+      || Math.abs(group.current.position.y) > 0.002
+    if (active || settling) invalidate()
+    if (!dancing && !settling) danceTime.current = 0
   })
 
   return (
     <group ref={group} rotation={[0.12, -0.5, 0]}>
-      <mesh castShadow receiveShadow>
+      <mesh>
         <boxGeometry args={dimensions} />
-        {coverUrl ? <CoverMaterial url={coverUrl} fallbackColor={color} rotationDegrees={coverRotationDegrees} /> : <meshStandardMaterial color={color} roughness={0.76} />}
+        {coverUrl ? (
+          <CoverMaterial
+            url={coverUrl}
+            fallbackColor={color}
+            rotationDegrees={coverRotationDegrees}
+            muted={muted}
+            opacity={opacity}
+          />
+        ) : (
+          <meshStandardMaterial
+            color={muted ? '#918b8e' : color}
+            roughness={0.76}
+            transparent={opacity < 1}
+            opacity={opacity}
+            depthWrite={opacity === 1}
+          />
+        )}
+        <Edges color="#2a1a17" transparent opacity={0.5 * opacity} />
       </mesh>
-      <lineSegments>
-        <edgesGeometry args={[new THREE.BoxGeometry(...dimensions)]} />
-        <lineBasicMaterial color="#2a1a17" transparent opacity={0.5} />
-      </lineSegments>
     </group>
   )
 }
@@ -144,11 +194,8 @@ export function PackedBox({
       <mesh castShadow receiveShadow>
         <boxGeometry args={dimensions} />
         {coverUrl ? <CoverMaterial url={coverUrl} fallbackColor={color} rotationDegrees={coverRotationDegrees} /> : <meshStandardMaterial color={color} roughness={0.72} />}
+        <Edges color="#160d0c" transparent opacity={0.62} />
       </mesh>
-      <lineSegments>
-        <edgesGeometry args={[new THREE.BoxGeometry(...dimensions)]} />
-        <lineBasicMaterial color="#160d0c" transparent opacity={0.62} />
-      </lineSegments>
     </group>
   )
 }

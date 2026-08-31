@@ -44,10 +44,10 @@ export const boardGameApi = {
     requestJson<SavedMenu>(`/api/board-game-menu/menus/${encodeURIComponent(menuId)}`),
   createMenu: (payload: MenuMutationPayload) =>
     requestJson<MenuMutationResponse>('/api/board-game-menu/menus', jsonInit('POST', payload)),
-  updateMenu: (menuId: string, payload: MenuMutationPayload, editToken: string) =>
+  updateMenu: (menuId: string, payload: MenuMutationPayload) =>
     requestJson<MenuMutationResponse>(
       `/api/board-game-menu/menus/${encodeURIComponent(menuId)}`,
-      jsonInit('PUT', payload, { 'X-Menu-Edit-Token': editToken }),
+      jsonInit('PUT', payload),
     ),
   admin: {
     getCatalog: () => requestJson<AdminCatalogResponse>('/api/board-game-menu/admin/games'),

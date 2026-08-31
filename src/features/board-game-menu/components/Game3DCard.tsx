@@ -1,4 +1,4 @@
-import { Canvas } from '@react-three/fiber'
+import { View } from '@react-three/drei'
 import type { CatalogGame } from '../api/types'
 import { useReducedMotion } from '../three/useReducedMotion'
 import { PreviewBox } from './BoardGameBoxMesh'
@@ -48,25 +48,20 @@ export function Game3DCard({ game, selected, matches, rejected, disabled, onTogg
       <span className="bgm-game-card__selection" aria-hidden="true">
         {selected ? 'Selected' : ''}
       </span>
-      <span className="bgm-game-card__canvas" aria-hidden="true">
-        <Canvas
-          shadows
-          dpr={[1, 1.5]}
-          camera={{ position: [3.7, 2.8, 4.2], fov: 34 }}
-          frameloop={selected && !reducedMotion ? 'always' : 'demand'}
-        >
-          <ambientLight intensity={1.6} />
-          <directionalLight position={[4, 6, 5]} intensity={2.6} castShadow />
-          <PreviewBox
-            dimensions={normalizedDimensions(game)}
-            coverUrl={game.coverUrl}
-            coverRotationDegrees={game.coverRotationDegrees}
-            color={gameColor(game.id)}
-            dancing={selected}
-            reducedMotion={reducedMotion}
-          />
-        </Canvas>
-      </span>
+      <View as="span" className="bgm-game-card__canvas" frames={Infinity}>
+        <ambientLight intensity={1.6} />
+        <directionalLight position={[4, 6, 5]} intensity={2.6} />
+        <PreviewBox
+          dimensions={normalizedDimensions(game)}
+          coverUrl={game.coverUrl}
+          coverRotationDegrees={game.coverRotationDegrees}
+          color={gameColor(game.id)}
+          dancing={selected}
+          reducedMotion={reducedMotion}
+          muted={!matches}
+          opacity={!matches ? (selected ? 0.84 : 0.36) : 1}
+        />
+      </View>
       <span className="bgm-game-card__copy">
         <strong>{game.name}</strong>
         <span>{courseLabel(game.course)}</span>

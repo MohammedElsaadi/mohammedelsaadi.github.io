@@ -6,7 +6,7 @@ import { BoardGamePicker, type PickerDraft } from '../features/board-game-menu/c
 import { CratePanel } from '../features/board-game-menu/components/CratePanel'
 import { packCrate } from '../features/board-game-menu/packing/packCrate'
 import type { PackingItem, PackingResult } from '../features/board-game-menu/packing/types'
-import { editDraftKey, editTokenKey, readStoredValue, removeStoredValue } from '../features/board-game-menu/state/localStorage'
+import { editDraftKey, removeStoredValue } from '../features/board-game-menu/state/localStorage'
 import { formatDateOnly } from '../features/board-game-menu/utils/dates'
 import '../features/board-game-menu/board-game-menu.css'
 
@@ -19,7 +19,6 @@ function BoardGameMenuSaved() {
   const [catalog, setCatalog] = useState<CatalogResponse | null>(null)
   const [error, setError] = useState(false)
   const [editing, setEditing] = useState(false)
-  const hasEditToken = Boolean(readStoredValue<string>(editTokenKey(menuId)))
   const notificationSent = (location.state as { notificationSent?: boolean } | null)?.notificationSent
 
   useEffect(() => {
@@ -106,7 +105,7 @@ function BoardGameMenuSaved() {
           <h1>{menu.title}</h1>
           <p>Everything to pull from the shelf before game night on {formatDateOnly(menu.gameNightDate)}.</p>
         </div>
-        {hasEditToken ? <button type="button" className="bgm-primary-button" onClick={() => setEditing(true)}>Edit menu</button> : null}
+        <button type="button" className="bgm-primary-button" onClick={() => setEditing(true)}>Edit menu</button>
       </header>
 
       {notificationSent === false ? <div className="bgm-saved-warning">Menu saved successfully, but the text notification could not be sent.</div> : null}
