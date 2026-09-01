@@ -245,12 +245,12 @@
 .bgm-primary-button:focus-visible,
 .bgm-secondary-button:focus-visible { outline: 3px solid var(--bgm-gold); outline-offset: 3px; }
 .bgm-tote-card.is-filtered:not(.is-selected) { opacity: .36; filter: grayscale(.75); }
-.bgm-game-card.is-filtered:not(.is-selected) .bgm-game-card__canvas,
+.bgm-game-card.is-filtered:not(.is-selected) .bgm-game-card__visual,
 .bgm-game-card.is-filtered:not(.is-selected) .bgm-game-card__copy { opacity: .36; filter: grayscale(.75); }
 .bgm-game-card.is-selected,
 .bgm-tote-card.is-selected { border-color: var(--bgm-coral); box-shadow: 0 0 0 4px rgba(229,111,74,.16), 0 18px 42px rgba(58,33,45,.2); }
 .bgm-tote-card.is-selected.is-filtered { opacity: .84; filter: saturate(.7); }
-.bgm-game-card.is-selected.is-filtered .bgm-game-card__canvas,
+.bgm-game-card.is-selected.is-filtered .bgm-game-card__visual,
 .bgm-game-card.is-selected.is-filtered .bgm-game-card__copy { opacity: .84; filter: saturate(.7); }
 .bgm-game-card:disabled { cursor: not-allowed; }
 .bgm-game-card.is-rejected { animation: bgm-reject .42s ease; }
@@ -259,7 +259,9 @@
 .bgm-game-card__selection--locked { background: var(--bgm-green); }
 .bgm-game-card.is-locked:disabled { cursor: default; }
 .bgm-game-card.is-locked:hover { top: 0; }
-.bgm-game-card__canvas { display: block; height: 200px; background: radial-gradient(circle, #fff 0, #f4e7d1 72%); pointer-events: none; }
+.bgm-game-card__visual { position: relative; display: block; height: 200px; }
+.bgm-game-card__canvas { display: block; height: 100%; background: radial-gradient(circle, #fff 0, #f4e7d1 72%); pointer-events: none; }
+.bgm-game-card__course { position: absolute; left: 12px; bottom: 12px; z-index: 3; padding: 5px 8px; border: 1px solid rgba(59,32,54,.12); border-radius: 999px; color: var(--bgm-plum); background: rgba(255,255,255,.86); box-shadow: 0 4px 12px rgba(58,33,45,.12); backdrop-filter: blur(6px); font-size: .62rem; font-weight: 900; letter-spacing: .06em; line-height: 1; text-transform: uppercase; }
 .bgm-game-card__copy { position: relative; z-index: 2; display: grid; gap: 5px; padding: 16px 17px 19px; }
 .bgm-game-card__copy strong, .bgm-tote-card__toggle > strong { font-family: Georgia, serif; font-size: 1.22rem; }
 .bgm-game-card__copy span { color: var(--bgm-muted); font-size: .78rem; }
@@ -417,7 +419,8 @@
   .bgm-game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 14px; }
   .bgm-game-card,
   .bgm-tote-card { min-height: 255px; border-radius: 16px; }
-  .bgm-game-card__canvas { height: 145px; }
+  .bgm-game-card__visual { height: 145px; }
+  .bgm-game-card__course { left: 9px; bottom: 9px; padding: 4px 7px; font-size: .57rem; }
   .bgm-game-card__copy { padding: 12px; }
   .bgm-game-card__copy strong,
   .bgm-tote-card__toggle > strong { font-size: .98rem; }
