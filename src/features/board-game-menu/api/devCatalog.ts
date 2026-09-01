@@ -86,6 +86,28 @@ const crateGames: CatalogGame[] = [
   },
 ]
 
+const requiredCrateItems: CatalogGame[] = [{
+  ...baseGame,
+  id: 'demo-card-caddy',
+  slug: 'demo-card-caddy',
+  name: 'Card Caddy',
+  itemType: 'accessory',
+  selectable: false,
+  alwaysPacked: true,
+  allowOverflow: false,
+  widthMm: 95,
+  heightMm: 95,
+  depthMm: 95,
+  minPlayers: null,
+  maxPlayers: null,
+  minPlayTimeMinutes: null,
+  maxPlayTimeMinutes: null,
+  complexity: null,
+  course: null,
+  sortOrder: 10,
+  tags: [],
+}]
+
 const toteGames: CatalogGame[] = [
   {
     ...baseGame,
@@ -154,6 +176,6 @@ export const developmentCatalog: CatalogResponse = {
   ],
   crateGames,
   toteGames,
-  requiredCrateItems: [],
+  requiredCrateItems,
   tags,
 }
