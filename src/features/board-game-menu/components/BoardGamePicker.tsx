@@ -301,7 +301,6 @@ export function BoardGamePicker({
           packing={packing.success ? packing : EMPTY_PACKING}
           selectedCount={selectedIds.length}
           toteSelected={toteSelected}
-          floating
         />
         <section ref={browserRef} className="bgm-browser" aria-label="Board-game collection">
           {visibleCardCount > 0 ? <CatalogPreviewCanvas scrollRoot={browserRef} /> : null}
