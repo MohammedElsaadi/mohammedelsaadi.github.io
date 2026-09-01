@@ -21,6 +21,7 @@ const DEFAULT_TOTE_WIDTH_MM = 300
 const DEFAULT_TOTE_HEIGHT_MM = 350
 const DEFAULT_TOTE_DEPTH_MM = 65
 const TOTE_HANDLE_RISE_MM = 110
+const TOTE_HANDLE_DEPTH_SCALE = 0.3
 
 function colorFor(id: string) {
   const index = [...id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % palette.length
@@ -32,16 +33,16 @@ function ToteMesh({ x, z, width, height, depth, imageUrl }: { x: number; z: numb
   const handleRise = mmToScene(TOTE_HANDLE_RISE_MM)
   const attachmentX = width * 0.3
   const top = height / 2
-  const handleCurves = useMemo(() => [-1, 1].map((side) => {
-    const handleZ = side * (depth / 2 + handleRadius * 0.35)
-    return new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-attachmentX, top, handleZ),
-      new THREE.Vector3(-attachmentX * 0.72, top + handleRise * 0.72, handleZ),
-      new THREE.Vector3(0, top + handleRise, handleZ),
-      new THREE.Vector3(attachmentX * 0.72, top + handleRise * 0.72, handleZ),
-      new THREE.Vector3(attachmentX, top, handleZ),
-    ])
-  }), [attachmentX, depth, handleRadius, handleRise, top])
+  const handles = useMemo(() => [-1, 1].map((side) => ({
+    z: side * (depth / 2 + handleRadius * 0.35),
+    curve: new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-attachmentX, top, 0),
+      new THREE.Vector3(-attachmentX * 0.72, top + handleRise * 0.72, 0),
+      new THREE.Vector3(0, top + handleRise, 0),
+      new THREE.Vector3(attachmentX * 0.72, top + handleRise * 0.72, 0),
+      new THREE.Vector3(attachmentX, top, 0),
+    ]),
+  })), [attachmentX, depth, handleRadius, handleRise, top])
 
   return (
     <group position={[x, height / 2, z]}>
@@ -49,10 +50,10 @@ function ToteMesh({ x, z, width, height, depth, imageUrl }: { x: number; z: numb
         <boxGeometry args={[width, height, depth]} />
         {imageUrl ? <CoverMaterial url={imageUrl} fallbackColor="#d9794f" rotationDegrees={0} /> : <meshStandardMaterial color="#d9794f" roughness={0.9} />}
       </mesh>
-      {handleCurves.map((curve, index) => (
-        <mesh key={index} castShadow>
-          <tubeGeometry args={[curve, 28, handleRadius, 8, false]} />
-          <meshStandardMaterial color="#5a3138" roughness={0.82} />
+      {handles.map((handle, index) => (
+        <mesh key={index} castShadow position-z={handle.z} scale-z={TOTE_HANDLE_DEPTH_SCALE}>
+          <tubeGeometry args={[handle.curve, 28, handleRadius, 8, false]} />
+          <meshStandardMaterial color="#cccccc" roughness={0.82} />
         </mesh>
       ))}
     </group>
