@@ -14,7 +14,6 @@ interface CrateSceneProps {
   games: CatalogGame[]
   packing: PackingResult
   toteSelected: boolean
-  orbMode?: boolean
 }
 
 const palette = ['#e46f4c', '#e7b64d', '#4d8d78', '#7988bc', '#a977a8']
@@ -85,10 +84,9 @@ function SceneContents({
   tote,
   games,
   packing,
+  toteSelected,
   reducedMotion,
-  cameraTargetX,
-  showToteInScene,
-}: CrateSceneProps & { reducedMotion: boolean; cameraTargetX: number; showToteInScene: boolean }) {
+}: CrateSceneProps & { reducedMotion: boolean }) {
   const width = mmToScene(crate.innerWidthMm ?? 1)
   const height = mmToScene(crate.innerHeightMm ?? 1)
   const depth = mmToScene(crate.innerDepthMm ?? 1)
@@ -102,7 +100,7 @@ function SceneContents({
   const overflowByStack = [...packing.overflow].sort((a, b) => a.stackIndex - b.stackIndex)
   const packedTop = height + mmToScene(packing.heightToleranceUsedMm ?? 0)
   const overflowHeight = overflowByStack.reduce((sum, item) => sum + mmToScene(item.dimensionsMm.height) + wall, 0)
-  const sceneHeight = Math.max(width, packedTop + overflowHeight, depth, showToteInScene ? toteHeight + mmToScene(TOTE_HANDLE_RISE_MM) : 0)
+  const sceneHeight = Math.max(width, packedTop + overflowHeight, depth, toteSelected ? toteHeight + mmToScene(TOTE_HANDLE_RISE_MM) : 0)
   const dropStartY = height * 0.45 + sceneHeight * 1.15
   const triggerImpact = useCallback(() => {
     if (!reducedMotion) impactElapsed.current = 0
@@ -219,7 +217,7 @@ function SceneContents({
           })}
         </Suspense>
 
-        {showToteInScene ? (
+        {toteSelected ? (
           <ToteMesh
             x={width / 2 + toteWidth / 2 + Math.max(width * 0.08, 0.4)}
             z={depth * 0.12}
@@ -242,7 +240,7 @@ function SceneContents({
         maxDistance={Math.max(width, depth) * 2.7}
         minPolarAngle={Math.PI / 7}
         maxPolarAngle={Math.PI / 2.15}
-        target={[cameraTargetX, Math.max(height, showToteInScene ? toteHeight : 0) * 0.45, 0]}
+        target={[toteSelected ? width * 0.12 : 0, Math.max(height, toteSelected ? toteHeight : 0) * 0.45, 0]}
       />
     </>
   )
@@ -258,9 +256,8 @@ export function CrateScene(props: CrateSceneProps) {
   const toteWidth = mmToScene(props.tote?.innerWidthMm ?? DEFAULT_TOTE_WIDTH_MM)
   const toteHeight = mmToScene(props.tote?.innerHeightMm ?? DEFAULT_TOTE_HEIGHT_MM)
   const toteWithHandlesHeight = toteHeight + mmToScene(TOTE_HANDLE_RISE_MM)
-  const showToteInScene = props.toteSelected && (!props.orbMode || mobileCamera)
-  const maximum = Math.max(width, effectiveHeight, depth, showToteInScene ? toteWithHandlesHeight : 0)
-  const horizontalExtent = showToteInScene
+  const maximum = Math.max(width, effectiveHeight, depth, props.toteSelected ? toteWithHandlesHeight : 0)
+  const horizontalExtent = props.toteSelected
     ? width + toteWidth + Math.max(width * 0.08, 0.4)
     : width
   const overflowHeight = props.packing.overflow.reduce(
@@ -268,10 +265,8 @@ export function CrateScene(props: CrateSceneProps) {
     0,
   )
   const overflowStackTop = height + mmToScene(props.packing.heightToleranceUsedMm ?? 0) + overflowHeight
-  const cameraTargetX = showToteInScene
-    ? width * (props.orbMode && !mobileCamera ? 0.08 : -0.12)
-    : 0
-  const cameraTargetY = Math.max(height, showToteInScene ? toteHeight : 0) * 0.45
+  const cameraTargetX = props.toteSelected ? width * 0.12 : 0
+  const cameraTargetY = Math.max(height, props.toteSelected ? toteHeight : 0) * 0.45
   const cameraDistanceScale = mobileCamera ? MOBILE_CAMERA_DISTANCE_SCALE : 1
   const cameraX = cameraTargetX + (horizontalExtent * 1.05 - cameraTargetX) * cameraDistanceScale
   const cameraYBase = Math.max(maximum * 1.05, overflowStackTop)
@@ -287,12 +282,7 @@ export function CrateScene(props: CrateSceneProps) {
         fov: 42,
       }}
     >
-      <SceneContents
-        {...props}
-        reducedMotion={reducedMotion}
-        cameraTargetX={cameraTargetX}
-        showToteInScene={showToteInScene}
-      />
+      <SceneContents {...props} reducedMotion={reducedMotion} />
     </Canvas>
   )
 }
