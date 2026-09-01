@@ -47,8 +47,9 @@ export function PrimaryFilterBar({ filters, setFilters }: FilterBarProps) {
           </button>
         ))}
       </div>
-      <button type="button" className="bgm-text-button bgm-filters__reset" onClick={() => setFilters(createDefaultFilters())}>
-        Reset filters
+      <button type="button" className="bgm-text-button bgm-filters__reset" aria-label="Reset filters" onClick={() => setFilters(createDefaultFilters())}>
+        <span>Reset</span>
+        <span>filters</span>
       </button>
     </section>
   )

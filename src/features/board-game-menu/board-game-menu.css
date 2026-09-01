@@ -202,7 +202,7 @@
 }
 .bgm-filters__heading { min-width: 0; justify-self: end; }
 .bgm-filters h2 { margin: 0; font-size: clamp(.98rem, 1vw, 1.15rem); line-height: 1.1; white-space: nowrap; }
-.bgm-filters__reset { justify-self: start; white-space: nowrap; font-size: .65rem; letter-spacing: .06em; }
+.bgm-filters__reset { display: grid; justify-items: center; justify-self: start; white-space: nowrap; font-size: .65rem; line-height: .85; letter-spacing: .06em; text-align: center; }
 .bgm-text-button { border: 0; background: transparent; cursor: pointer; }
 .bgm-course-tabs { display: flex; width: 100%; gap: 3px; margin: 0; padding: 3px; border: 1px solid var(--bgm-line); border-radius: 12px; background: rgba(255,255,255,.56); }
 .bgm-course-tabs button { flex: 1; min-width: max-content; border: 0; border-radius: 9px; padding: 7px 10px; background: transparent; color: var(--bgm-muted); font: inherit; font-size: .72rem; font-weight: 850; cursor: pointer; }
