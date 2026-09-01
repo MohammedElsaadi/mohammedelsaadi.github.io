@@ -1,6 +1,6 @@
 import { OrbitControls } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { Suspense, useCallback, useMemo, useRef } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import type { CatalogContainer, CatalogGame } from '../api/types'
 import type { PackingResult } from '../packing/types'
@@ -24,6 +24,23 @@ const TOTE_HANDLE_RISE_MM = 110
 const TOTE_HANDLE_DEPTH_SCALE = 0.3
 const IMPACT_DURATION_SECONDS = 0.28
 const IMPACT_VERTICAL_FREQUENCY = 50
+const MOBILE_CAMERA_DISTANCE_SCALE = 0.76
+
+function useMobileCamera() {
+  const [mobile, setMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 800px)').matches,
+  )
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 800px)')
+    const update = () => setMobile(media.matches)
+    media.addEventListener('change', update)
+    update()
+    return () => media.removeEventListener('change', update)
+  }, [])
+
+  return mobile
+}
 
 function colorFor(id: string) {
   const index = [...id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % palette.length
@@ -231,6 +248,7 @@ function SceneContents({
 
 export function CrateScene(props: CrateSceneProps) {
   const reducedMotion = useReducedMotion()
+  const mobileCamera = useMobileCamera()
   const width = mmToScene(props.crate.innerWidthMm ?? 1)
   const height = mmToScene(props.crate.innerHeightMm ?? 1)
   const effectiveHeight = height + mmToScene(props.crate.heightToleranceMm)
@@ -247,13 +265,20 @@ export function CrateScene(props: CrateSceneProps) {
     0,
   )
   const overflowStackTop = height + mmToScene(props.packing.heightToleranceUsedMm ?? 0) + overflowHeight
+  const cameraTargetX = props.toteSelected ? width * 0.12 : 0
+  const cameraTargetY = Math.max(height, props.toteSelected ? toteHeight : 0) * 0.45
+  const cameraDistanceScale = mobileCamera ? MOBILE_CAMERA_DISTANCE_SCALE : 1
+  const cameraX = cameraTargetX + (horizontalExtent * 1.05 - cameraTargetX) * cameraDistanceScale
+  const cameraYBase = Math.max(maximum * 1.05, overflowStackTop)
+  const cameraY = cameraTargetY + (cameraYBase - cameraTargetY) * cameraDistanceScale
+  const cameraZ = maximum * 1.5 * cameraDistanceScale
 
   return (
     <Canvas
       shadows
       dpr={[1, 1.5]}
       camera={{
-        position: [horizontalExtent * 1.05, Math.max(maximum * 1.05, overflowStackTop), maximum * 1.5],
+        position: [cameraX, cameraY, cameraZ],
         fov: 42,
       }}
     >
