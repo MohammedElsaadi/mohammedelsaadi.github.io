@@ -52,24 +52,28 @@ export function Game3DCard({ game, selected, matches, rejected, disabled, locked
       <span className={`bgm-game-card__selection${locked ? ' bgm-game-card__selection--locked' : ''}`} aria-hidden="true">
         {badgeLabel}
       </span>
-      <View as="span" className="bgm-game-card__canvas" frames={Infinity}>
-        <ambientLight intensity={1.6} />
-        <directionalLight position={[4, 6, 5]} intensity={2.6} />
-        <PreviewBox
-          dimensions={normalizedDimensions(game)}
-          coverUrl={game.coverUrl}
-          sideUrl={game.sideUrl}
-          coverRotationDegrees={game.coverRotationDegrees}
-          color={gameColor(game.id)}
-          dancing={selected}
-          reducedMotion={reducedMotion}
-          muted={!matches}
-          opacity={!matches ? (selected ? 0.84 : 0.36) : 1}
-        />
-      </View>
+      <span className="bgm-game-card__visual">
+        <View as="span" className="bgm-game-card__canvas" frames={Infinity}>
+          <ambientLight intensity={1.6} />
+          <directionalLight position={[4, 6, 5]} intensity={2.6} />
+          <PreviewBox
+            dimensions={normalizedDimensions(game)}
+            coverUrl={game.coverUrl}
+            sideUrl={game.sideUrl}
+            coverRotationDegrees={game.coverRotationDegrees}
+            color={gameColor(game.id)}
+            dancing={selected}
+            reducedMotion={reducedMotion}
+            muted={!matches}
+            opacity={!matches ? (selected ? 0.84 : 0.36) : 1}
+          />
+        </View>
+        <span className="bgm-game-card__course" aria-hidden="true">
+          {accessory ? 'Accessory' : courseLabel(game.course)}
+        </span>
+      </span>
       <span className="bgm-game-card__copy">
         <strong>{game.name}</strong>
-        <span>{accessory ? 'Crate Accessory' : courseLabel(game.course)}</span>
         <span>
           {accessory
             ? 'Included with every crate game'
