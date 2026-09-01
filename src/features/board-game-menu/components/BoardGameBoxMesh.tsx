@@ -104,7 +104,7 @@ function BoxMaterials({ coverUrl, sideUrl, coverRotationDegrees, color, muted = 
       <FaceMaterial attach="material-0" texture={nonTopTexture} fallbackColor={color} muted={muted} opacity={opacity} />
       <FaceMaterial attach="material-1" texture={nonTopTexture} fallbackColor={color} muted={muted} opacity={opacity} />
       <FaceMaterial attach="material-2" texture={coverTexture} fallbackColor={color} muted={muted} opacity={opacity} />
-      <FaceMaterial attach="material-3" texture={nonTopTexture} fallbackColor={color} muted={muted} opacity={opacity} />
+      <FaceMaterial attach="material-3" texture={coverTexture} fallbackColor={color} muted={muted} opacity={opacity} />
       <FaceMaterial attach="material-4" texture={nonTopTexture} fallbackColor={color} muted={muted} opacity={opacity} />
       <FaceMaterial attach="material-5" texture={nonTopTexture} fallbackColor={color} muted={muted} opacity={opacity} />
     </>

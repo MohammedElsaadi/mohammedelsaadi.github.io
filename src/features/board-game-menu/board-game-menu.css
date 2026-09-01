@@ -101,6 +101,8 @@
   text-transform: uppercase;
 }
 
+.bgm-picker__date label { text-align: center; }
+
 .bgm-picker__date input,
 .bgm-admin-field input,
 .bgm-admin-field select,
