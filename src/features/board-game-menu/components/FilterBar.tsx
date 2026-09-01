@@ -30,13 +30,7 @@ export function PrimaryFilterBar({ filters, setFilters }: FilterBarProps) {
   return (
     <section className="bgm-filters" aria-label="Board-game course filters">
       <div className="bgm-filters__heading">
-        <div>
-          <span className="bgm-kicker">Tune the table</span>
-          <h2>What sounds fun?</h2>
-        </div>
-        <button type="button" className="bgm-text-button" onClick={() => setFilters(createDefaultFilters())}>
-          Reset filters
-        </button>
+        <h2>What would you like to play?</h2>
       </div>
       <div className="bgm-course-tabs" role="tablist" aria-label="Game courses">
         {courseTabs.map((tab) => (
@@ -53,6 +47,9 @@ export function PrimaryFilterBar({ filters, setFilters }: FilterBarProps) {
           </button>
         ))}
       </div>
+      <button type="button" className="bgm-text-button bgm-filters__reset" onClick={() => setFilters(createDefaultFilters())}>
+        Reset filters
+      </button>
     </section>
   )
 }
