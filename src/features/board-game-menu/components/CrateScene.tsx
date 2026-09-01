@@ -81,8 +81,9 @@ function SceneContents({
   const impactElapsed = useRef<number | null>(null)
   const gameMap = useMemo(() => new Map(games.map((game) => [game.id, game])), [games])
   const overflowByStack = [...packing.overflow].sort((a, b) => a.stackIndex - b.stackIndex)
+  const packedTop = height + mmToScene(packing.heightToleranceUsedMm ?? 0)
   const overflowHeight = overflowByStack.reduce((sum, item) => sum + mmToScene(item.dimensionsMm.height) + wall, 0)
-  const sceneHeight = Math.max(width, height + overflowHeight, depth, toteSelected ? toteHeight + mmToScene(TOTE_HANDLE_RISE_MM) : 0)
+  const sceneHeight = Math.max(width, packedTop + overflowHeight, depth, toteSelected ? toteHeight + mmToScene(TOTE_HANDLE_RISE_MM) : 0)
   const dropStartY = height * 0.45 + sceneHeight * 1.15
   const triggerImpact = useCallback(() => {
     if (!reducedMotion) impactElapsed.current = 0
@@ -179,7 +180,7 @@ function SceneContents({
               : [mmToScene(overflow.dimensionsMm.width), itemHeight, mmToScene(overflow.dimensionsMm.depth)]
             const priorHeight = overflowByStack
               .slice(0, index)
-              .reduce((sum, item) => sum + mmToScene(item.dimensionsMm.height) + wall, height)
+              .reduce((sum, item) => sum + mmToScene(item.dimensionsMm.height) + wall, packedTop)
             const position: [number, number, number] = [0, priorHeight + itemHeight / 2 + wall, 0]
             return (
               <PackedBox
@@ -245,13 +246,14 @@ export function CrateScene(props: CrateSceneProps) {
     (sum, item) => sum + mmToScene(item.dimensionsMm.height),
     0,
   )
+  const overflowStackTop = height + mmToScene(props.packing.heightToleranceUsedMm ?? 0) + overflowHeight
 
   return (
     <Canvas
       shadows
       dpr={[1, 1.5]}
       camera={{
-        position: [horizontalExtent * 1.05, Math.max(maximum * 1.05, height + overflowHeight), maximum * 1.5],
+        position: [horizontalExtent * 1.05, Math.max(maximum * 1.05, overflowStackTop), maximum * 1.5],
         fov: 42,
       }}
     >

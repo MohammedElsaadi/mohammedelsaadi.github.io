@@ -32,7 +32,7 @@ export function CratePanel({ crate, tote, games, packing, selectedCount, toteSel
     <aside className="bgm-crate-panel" aria-label="Current container packing">
       <div className="bgm-crate-panel__heading">
         <div>
-          <span className="bgm-kicker">Live packing</span>
+          <span className="bgm-kicker">Packing preview</span>
           <h2>{crate?.name ?? 'Main Crate'}</h2>
         </div>
         <span className="bgm-crate-panel__count">{selectedCount} selected</span>

@@ -45,9 +45,10 @@
 
 .bgm-picker__intro {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  align-items: center;
   justify-self: center;
-  gap: 14px;
+  gap: 3px;
 }
 
 .bgm-picker__header > .bgm-back-link { justify-self: start; }
@@ -71,7 +72,7 @@
 
 .bgm-picker__header p,
 .bgm-saved-hero p { margin: 5px 0 0; color: var(--bgm-muted); }
-.bgm-picker__header p { max-width: 35ch; margin: 0; font-size: .76rem; line-height: 1.25; }
+.bgm-picker__header p { max-width: none; margin: 0; font-size: .76rem; line-height: 1.25; text-align: center; white-space: nowrap; }
 
 .bgm-back-link,
 .bgm-text-button {
@@ -166,7 +167,7 @@
 
 .bgm-crate-panel h2,
 .bgm-filters h2 { margin: 3px 0 0; font-family: Georgia, serif; font-size: clamp(1.5rem, 2.4vw, 2.4rem); }
-.bgm-crate-panel__heading .bgm-kicker { width: max-content; padding: 5px 8px; border-radius: 8px; background: rgba(36,19,33,.2); backdrop-filter: blur(6px); }
+.bgm-crate-panel__heading .bgm-kicker { width: max-content; padding: 5px 8px; border-radius: 8px; color: #9b3c26; background: rgba(255,255,255,.72); backdrop-filter: blur(6px); }
 .bgm-crate-panel__count { border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 7px 10px; font-size: .76rem; font-weight: 800; }
 .bgm-crate-panel__scene { min-height: 0; position: relative; }
 .bgm-crate-panel__scene canvas { touch-action: none; }
@@ -193,18 +194,17 @@
 .bgm-browser__filters { position: sticky; top: 0; z-index: 4; padding: 9px clamp(18px, 3vw, 38px) 10px; border-bottom: 1px solid var(--bgm-line); background: rgba(255,248,235,.96); backdrop-filter: blur(16px); }
 .bgm-dev-banner { padding: 7px 28px; background: #f6d99f; color: #593b16; font-size: .75rem; font-weight: 750; text-align: center; }
 .bgm-filters {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(420px, 540px) minmax(120px, 1fr);
   align-items: center;
-  justify-content: center;
-  gap: clamp(18px, 2vw, 36px);
+  gap: clamp(24px, 4vw, 72px);
   padding: 7px clamp(18px, 2.4vw, 38px) 8px;
 }
-.bgm-filters__heading { gap: 8px; }
-.bgm-filters__heading > div { min-width: max-content; }
-.bgm-filters__heading .bgm-text-button { white-space: nowrap; font-size: .65rem; letter-spacing: .06em; }
-.bgm-filters h2 { font-size: clamp(.98rem, 1vw, 1.15rem); line-height: 1; }
+.bgm-filters__heading { min-width: 0; justify-self: end; }
+.bgm-filters h2 { margin: 0; font-size: clamp(.98rem, 1vw, 1.15rem); line-height: 1.1; white-space: nowrap; }
+.bgm-filters__reset { justify-self: start; white-space: nowrap; font-size: .65rem; letter-spacing: .06em; }
 .bgm-text-button { border: 0; background: transparent; cursor: pointer; }
-.bgm-course-tabs { display: flex; width: min(540px, 48vw); gap: 3px; margin: 0; padding: 3px; border: 1px solid var(--bgm-line); border-radius: 12px; background: rgba(255,255,255,.56); }
+.bgm-course-tabs { display: flex; width: 100%; gap: 3px; margin: 0; padding: 3px; border: 1px solid var(--bgm-line); border-radius: 12px; background: rgba(255,255,255,.56); }
 .bgm-course-tabs button { flex: 1; min-width: max-content; border: 0; border-radius: 9px; padding: 7px 10px; background: transparent; color: var(--bgm-muted); font: inherit; font-size: .72rem; font-weight: 850; cursor: pointer; }
 .bgm-course-tabs button[aria-selected='true'] { background: var(--bgm-plum); color: white; box-shadow: 0 5px 14px rgba(58,33,45,.2); }
 .bgm-course-tabs button:focus-visible { outline: 3px solid var(--bgm-gold); outline-offset: 2px; }
@@ -379,6 +379,7 @@
 }
 
 @media (max-width: 1280px) {
+  .bgm-filters { grid-template-columns: max-content minmax(380px, 1fr) max-content; gap: clamp(16px, 2.5vw, 32px); }
   .bgm-filter-groups__inner { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bgm-filter-groups fieldset:first-child { grid-column: 1 / -1; }
 }
@@ -400,7 +401,7 @@
   .bgm-packing-status { grid-column: 1; grid-row: 2; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 16px; padding: 9px 12px; border-radius: 12px; }
   .bgm-packing-status strong { font-size: .82rem; }
   .bgm-packing-status span { font-size: .68rem; }
-  .bgm-filters { display: flex; padding: 8px 14px 9px; }
+  .bgm-filters { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 8px 14px 9px; }
   .bgm-filters__heading { display: none; }
   .bgm-course-tabs { width: 100%; }
   .bgm-course-tabs { overflow-x: auto; }
