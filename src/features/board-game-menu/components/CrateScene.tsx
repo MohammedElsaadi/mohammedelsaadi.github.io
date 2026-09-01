@@ -17,25 +17,44 @@ interface CrateSceneProps {
 }
 
 const palette = ['#e46f4c', '#e7b64d', '#4d8d78', '#7988bc', '#a977a8']
-const TOTE_WIDTH = mmToScene(300)
-const TOTE_HEIGHT = mmToScene(350)
+const DEFAULT_TOTE_WIDTH_MM = 300
+const DEFAULT_TOTE_HEIGHT_MM = 350
+const DEFAULT_TOTE_DEPTH_MM = 65
+const TOTE_HANDLE_RISE_MM = 110
 
 function colorFor(id: string) {
   const index = [...id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % palette.length
   return palette[index]
 }
 
-function ToteMesh({ x, z, depth, imageUrl }: { x: number; z: number; depth: number; imageUrl: string | null }) {
+function ToteMesh({ x, z, width, height, depth, imageUrl }: { x: number; z: number; width: number; height: number; depth: number; imageUrl: string | null }) {
+  const handleRadius = Math.max(mmToScene(7), Math.min(width, height) * 0.025)
+  const handleRise = mmToScene(TOTE_HANDLE_RISE_MM)
+  const attachmentX = width * 0.3
+  const top = height / 2
+  const handleCurves = useMemo(() => [-1, 1].map((side) => {
+    const handleZ = side * (depth / 2 + handleRadius * 0.35)
+    return new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-attachmentX, top, handleZ),
+      new THREE.Vector3(-attachmentX * 0.72, top + handleRise * 0.72, handleZ),
+      new THREE.Vector3(0, top + handleRise, handleZ),
+      new THREE.Vector3(attachmentX * 0.72, top + handleRise * 0.72, handleZ),
+      new THREE.Vector3(attachmentX, top, handleZ),
+    ])
+  }), [attachmentX, depth, handleRadius, handleRise, top])
+
   return (
-    <group position={[x, TOTE_HEIGHT / 2, z]}>
+    <group position={[x, height / 2, z]}>
       <mesh castShadow>
-        <boxGeometry args={[TOTE_WIDTH, TOTE_HEIGHT, depth]} />
+        <boxGeometry args={[width, height, depth]} />
         {imageUrl ? <CoverMaterial url={imageUrl} fallbackColor="#d9794f" rotationDegrees={0} /> : <meshStandardMaterial color="#d9794f" roughness={0.9} />}
       </mesh>
-      <mesh position={[0, TOTE_HEIGHT / 2, 0]} rotation={[0, 0, Math.PI]}>
-        <torusGeometry args={[TOTE_WIDTH * 0.304, TOTE_WIDTH * 0.052, 8, 28, Math.PI]} />
-        <meshStandardMaterial color="#f2c48c" roughness={0.9} />
-      </mesh>
+      {handleCurves.map((curve, index) => (
+        <mesh key={index} castShadow>
+          <tubeGeometry args={[curve, 28, handleRadius, 8, false]} />
+          <meshStandardMaterial color="#5a3138" roughness={0.82} />
+        </mesh>
+      ))}
     </group>
   )
 }
@@ -51,7 +70,9 @@ function SceneContents({
   const width = mmToScene(crate.innerWidthMm ?? 1)
   const height = mmToScene(crate.innerHeightMm ?? 1)
   const depth = mmToScene(crate.innerDepthMm ?? 1)
-  const toteDepth = Math.max(Math.min(width, depth) * 0.28, 0.8) * 0.56
+  const toteWidth = mmToScene(tote?.innerWidthMm ?? DEFAULT_TOTE_WIDTH_MM)
+  const toteHeight = mmToScene(tote?.innerHeightMm ?? DEFAULT_TOTE_HEIGHT_MM)
+  const toteDepth = mmToScene(tote?.innerDepthMm ?? DEFAULT_TOTE_DEPTH_MM)
   const wall = Math.max(Math.min(width, height, depth) * 0.018, 0.04)
   const assembly = useRef<THREE.Group>(null)
   const impactElapsed = useRef<number | null>(null)
@@ -179,8 +200,10 @@ function SceneContents({
 
         {toteSelected ? (
           <ToteMesh
-            x={width / 2 + TOTE_WIDTH / 2 + Math.max(width * 0.08, 0.4)}
+            x={width / 2 + toteWidth / 2 + Math.max(width * 0.08, 0.4)}
             z={depth * 0.12}
+            width={toteWidth}
+            height={toteHeight}
             depth={toteDepth}
             imageUrl={tote?.imageUrl ?? null}
           />
@@ -198,7 +221,7 @@ function SceneContents({
         maxDistance={Math.max(width, depth) * 2.7}
         minPolarAngle={Math.PI / 7}
         maxPolarAngle={Math.PI / 2.15}
-        target={[toteSelected ? width * 0.12 : 0, height * 0.45, 0]}
+        target={[toteSelected ? width * 0.12 : 0, Math.max(height, toteSelected ? toteHeight : 0) * 0.45, 0]}
       />
     </>
   )
@@ -210,9 +233,12 @@ export function CrateScene(props: CrateSceneProps) {
   const height = mmToScene(props.crate.innerHeightMm ?? 1)
   const effectiveHeight = height + mmToScene(props.crate.heightToleranceMm)
   const depth = mmToScene(props.crate.innerDepthMm ?? 1)
-  const maximum = Math.max(width, effectiveHeight, depth)
+  const toteWidth = mmToScene(props.tote?.innerWidthMm ?? DEFAULT_TOTE_WIDTH_MM)
+  const toteHeight = mmToScene(props.tote?.innerHeightMm ?? DEFAULT_TOTE_HEIGHT_MM)
+  const toteWithHandlesHeight = toteHeight + mmToScene(TOTE_HANDLE_RISE_MM)
+  const maximum = Math.max(width, effectiveHeight, depth, props.toteSelected ? toteWithHandlesHeight : 0)
   const horizontalExtent = props.toteSelected
-    ? width + TOTE_WIDTH + Math.max(width * 0.08, 0.4)
+    ? width + toteWidth + Math.max(width * 0.08, 0.4)
     : width
   const overflowHeight = props.packing.overflow.reduce(
     (sum, item) => sum + mmToScene(item.dimensionsMm.height),

@@ -22,8 +22,12 @@ export const onRequestPut: PagesFunction<Env> = async ({ env, params, request })
       await env.BOARD_GAME_DB.prepare('UPDATE containers SET name=?, inner_width_mm=?, inner_height_mm=?, inner_depth_mm=?, overflow_limit=?, height_tolerance_mm=?, is_active=?, updated_at=? WHERE id=?')
         .bind(name, width, height, depth, overflow, heightTolerance, Number(isActive), new Date().toISOString(), containerId).run()
     } else {
-      await env.BOARD_GAME_DB.prepare("UPDATE containers SET name=?, packing_mode='none', selection_mode='individual', inner_width_mm=NULL, inner_height_mm=NULL, inner_depth_mm=NULL, overflow_limit=0, height_tolerance_mm=0, is_active=?, updated_at=? WHERE id=?")
-        .bind(name, Number(isActive), new Date().toISOString(), containerId).run()
+      const width = nullableInteger(body.innerWidthMm, 'Tote width', 1, 2000)
+      const height = nullableInteger(body.innerHeightMm, 'Tote height', 1, 2000)
+      const depth = nullableInteger(body.innerDepthMm, 'Tote depth', 1, 2000)
+      if (width === null || height === null || depth === null) throw new HttpError(400, 'Tote width, height, and depth are required.')
+      await env.BOARD_GAME_DB.prepare("UPDATE containers SET name=?, packing_mode='none', selection_mode='individual', inner_width_mm=?, inner_height_mm=?, inner_depth_mm=?, overflow_limit=0, height_tolerance_mm=0, is_active=?, updated_at=? WHERE id=?")
+        .bind(name, width, height, depth, Number(isActive), new Date().toISOString(), containerId).run()
     }
     return json({ saved: true })
   } catch (error) { return errorResponse(error) }

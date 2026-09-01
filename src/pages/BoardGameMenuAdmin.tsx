@@ -308,7 +308,8 @@ function ContainerEditor({ container, onSaved, onError }: { container: CatalogCo
         <AdminField label="Height overflow tolerance (mm)"><input type="number" min="0" max="500" value={value.heightToleranceMm} onChange={(event) => setValue({ ...value, heightToleranceMm: Number(event.target.value) })} /></AdminField>
         <p className="bgm-admin-help">Adds invisible packing height above the crate rim. Boxes can protrude by this amount while the 3D crate keeps its real height.</p>
       </> : <>
-        <p>Contents are all active games assigned to this tote. Tote capacity is intentionally out of scope.</p>
+        <p>These exterior dimensions control the tote in the 3D scene. Tote contents are selected individually and are not bin-packed.</p>
+        {(['innerWidthMm','innerHeightMm','innerDepthMm'] as const).map((field) => <AdminField key={field} label={`Tote ${field.replace('inner','').replace('Mm','').toLowerCase()} (mm)`}><input type="number" min="1" max="2000" required value={value[field] ?? ''} onChange={(event) => setValue({ ...value, [field]: numberOrNull(event.target.value) })} /></AdminField>)}
         <AdminField label="Tote artwork"><input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setImage(event.target.files?.[0] ?? null)} /></AdminField>
         <MediaPreview file={image} currentUrl={value.imageUrl} label={`${value.name} artwork preview`} />
         {value.imageUrl ? <button type="button" className="bgm-secondary-button" onClick={async () => { try { await boardGameApi.admin.removeContainerImage(value.id); setValue((current) => ({ ...current, imageUrl: null })); onSaved() } catch (error) { onError(error instanceof Error ? error.message : 'Could not remove the tote artwork.') } }}>Remove tote artwork</button> : null}
