@@ -397,11 +397,11 @@
   .bgm-picker__date input { max-width: 142px; padding: 8px; }
   .bgm-picker__body { grid-template-columns: 1fr; grid-template-rows: minmax(0, 64fr) minmax(250px, 36fr); }
   .bgm-browser { grid-row: 1; padding-bottom: 24px; }
-  .bgm-crate-panel { grid-row: 2; position: relative; padding: 8px 14px 10px; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 7px; }
+  .bgm-crate-panel { grid-row: 2; position: relative; padding: 8px 14px 10px; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 0; }
   .bgm-crate-panel__heading,
   .bgm-crate-panel__hint { display: none; }
   .bgm-crate-panel__scene { grid-column: 1; grid-row: 1; }
-  .bgm-packing-status { grid-column: 1; grid-row: 2; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 16px; padding: 9px 12px; border-radius: 12px; }
+  .bgm-packing-status { display: none; }
   .bgm-packing-status strong { font-size: .82rem; }
   .bgm-packing-status span { font-size: .68rem; }
   .bgm-filters { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 8px 14px 9px; }
