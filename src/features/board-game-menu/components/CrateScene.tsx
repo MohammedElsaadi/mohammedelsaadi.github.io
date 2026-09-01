@@ -22,6 +22,8 @@ const DEFAULT_TOTE_HEIGHT_MM = 350
 const DEFAULT_TOTE_DEPTH_MM = 65
 const TOTE_HANDLE_RISE_MM = 110
 const TOTE_HANDLE_DEPTH_SCALE = 0.3
+const IMPACT_DURATION_SECONDS = 0.28
+const IMPACT_VERTICAL_FREQUENCY = 50
 
 function colorFor(id: string) {
   const index = [...id].reduce((sum, char) => sum + char.charCodeAt(0), 0) % palette.length
@@ -79,7 +81,9 @@ function SceneContents({
   const impactElapsed = useRef<number | null>(null)
   const gameMap = useMemo(() => new Map(games.map((game) => [game.id, game])), [games])
   const overflowByStack = [...packing.overflow].sort((a, b) => a.stackIndex - b.stackIndex)
-  const dropHeight = Math.max(height * 0.9, width * 0.55, 1.8)
+  const overflowHeight = overflowByStack.reduce((sum, item) => sum + mmToScene(item.dimensionsMm.height) + wall, 0)
+  const sceneHeight = Math.max(width, height + overflowHeight, depth, toteSelected ? toteHeight + mmToScene(TOTE_HANDLE_RISE_MM) : 0)
+  const dropStartY = height * 0.45 + sceneHeight * 1.15
   const triggerImpact = useCallback(() => {
     if (!reducedMotion) impactElapsed.current = 0
   }, [reducedMotion])
@@ -95,23 +99,19 @@ function SceneContents({
 
     const time = clock.getElapsedTime()
     const danceRotation = Math.sin(time * 2.2) * 0.16
-    let shakeX = 0
     let shakeY = 0
-    let shakeRotation = 0
 
     if (impactElapsed.current !== null) {
       impactElapsed.current += delta
-      const envelope = Math.max(0, 1 - impactElapsed.current / 0.32)
-      shakeX = Math.sin(impactElapsed.current * 92) * width * 0.026 * envelope
-      shakeY = Math.abs(Math.sin(impactElapsed.current * 112)) * height * 0.018 * envelope
-      shakeRotation = Math.sin(impactElapsed.current * 105) * 0.045 * envelope
+      const envelope = Math.max(0, 1 - impactElapsed.current / IMPACT_DURATION_SECONDS)
+      shakeY = Math.sin(impactElapsed.current * IMPACT_VERTICAL_FREQUENCY) * height * 0.012 * envelope * envelope
       if (envelope === 0) impactElapsed.current = null
     }
 
-    assembly.current.position.x = shakeX
+    assembly.current.position.x = 0
     assembly.current.position.y = shakeY
     assembly.current.rotation.y = danceRotation
-    assembly.current.rotation.z = shakeRotation
+    assembly.current.rotation.z = 0
   })
 
   return (
@@ -165,7 +165,7 @@ function SceneContents({
                 sideUrl={game?.sideUrl ?? null}
                 coverRotationDegrees={game?.coverRotationDegrees ?? 0}
                 color={colorFor(packed.itemId)}
-                dropHeight={dropHeight}
+                dropStartY={dropStartY}
                 reducedMotion={reducedMotion}
                 onImpact={triggerImpact}
               />
@@ -191,7 +191,7 @@ function SceneContents({
                 sideUrl={game?.sideUrl ?? null}
                 coverRotationDegrees={game?.coverRotationDegrees ?? 0}
                 color={colorFor(overflow.itemId)}
-                dropHeight={dropHeight}
+                dropStartY={dropStartY}
                 reducedMotion={reducedMotion}
                 onImpact={triggerImpact}
               />
