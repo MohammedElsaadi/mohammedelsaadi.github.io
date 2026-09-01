@@ -123,6 +123,12 @@ interface PreviewBoxProps {
   opacity?: number
 }
 
+const PREVIEW_IDLE_PITCH = 0.5
+const PREVIEW_IDLE_YAW = 0.25
+const PREVIEW_SELECTED_PITCH = 0.12
+const PREVIEW_SELECTED_YAW = -0.5
+const PREVIEW_POSE_DAMPING = 20
+
 export function PreviewBox({ dimensions, coverUrl, sideUrl, coverRotationDegrees, color, dancing, reducedMotion, muted = false, opacity = 1 }: PreviewBoxProps) {
   const group = useRef<THREE.Group>(null)
   const danceTime = useRef(0)
@@ -135,22 +141,30 @@ export function PreviewBox({ dimensions, coverUrl, sideUrl, coverRotationDegrees
     const active = dancing && !reducedMotion
     if (active) danceTime.current += delta
     const time = danceTime.current
-    const yaw = -0.5 + (active ? Math.sin(time * 5) * 0.14 : 0)
+    const pitch = dancing ? PREVIEW_SELECTED_PITCH : PREVIEW_IDLE_PITCH
+    const yaw = (dancing ? PREVIEW_SELECTED_YAW : PREVIEW_IDLE_YAW) + (active ? Math.sin(time * 5) * 0.14 : 0)
     const roll = active ? Math.sin(time * 7) * 0.05 : 0
     const bob = active ? Math.abs(Math.sin(time * 5)) * 0.1 : 0
-    group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, yaw, 12, delta)
-    group.current.rotation.z = THREE.MathUtils.damp(group.current.rotation.z, roll, 12, delta)
-    group.current.position.y = THREE.MathUtils.damp(group.current.position.y, bob, 12, delta)
+    if (reducedMotion) {
+      group.current.rotation.set(pitch, yaw, roll)
+      group.current.position.y = 0
+      return
+    }
+    group.current.rotation.x = THREE.MathUtils.damp(group.current.rotation.x, pitch, PREVIEW_POSE_DAMPING, delta)
+    group.current.rotation.y = THREE.MathUtils.damp(group.current.rotation.y, yaw, PREVIEW_POSE_DAMPING, delta)
+    group.current.rotation.z = THREE.MathUtils.damp(group.current.rotation.z, roll, PREVIEW_POSE_DAMPING, delta)
+    group.current.position.y = THREE.MathUtils.damp(group.current.position.y, bob, PREVIEW_POSE_DAMPING, delta)
 
-    const settling = Math.abs(group.current.rotation.y + 0.5) > 0.002
-      || Math.abs(group.current.rotation.z) > 0.002
-      || Math.abs(group.current.position.y) > 0.002
+    const settling = Math.abs(group.current.rotation.x - pitch) > 0.002
+      || Math.abs(group.current.rotation.y - yaw) > 0.002
+      || Math.abs(group.current.rotation.z - roll) > 0.002
+      || Math.abs(group.current.position.y - bob) > 0.002
     if (active || settling) invalidate()
     if (!dancing && !settling) danceTime.current = 0
   })
 
   return (
-    <group ref={group} rotation={[0.12, -0.5, 0]}>
+    <group ref={group} rotation={[PREVIEW_IDLE_PITCH, PREVIEW_IDLE_YAW, 0]}>
       <mesh>
         <boxGeometry args={dimensions} />
         <BoxMaterials coverUrl={coverUrl} sideUrl={sideUrl} coverRotationDegrees={coverRotationDegrees} color={color} muted={muted} opacity={opacity} />
@@ -168,15 +182,15 @@ interface PackedBoxProps {
   sideUrl: string | null
   coverRotationDegrees: ImageRotation
   color: string
-  dropHeight: number
+  dropStartY: number
   reducedMotion: boolean
   onImpact: () => void
 }
 
-export function PackedBox({ dimensions, position, orientation, coverUrl, sideUrl, coverRotationDegrees, color, dropHeight, reducedMotion, onImpact }: PackedBoxProps) {
+export function PackedBox({ dimensions, position, orientation, coverUrl, sideUrl, coverRotationDegrees, color, dropStartY, reducedMotion, onImpact }: PackedBoxProps) {
   const group = useRef<THREE.Group>(null)
   const quaternion = useMemo(() => packedRotationQuaternion(orientation), [orientation])
-  const [startPosition] = useState<[number, number, number]>(() => [position[0], position[1] + (reducedMotion ? 0 : dropHeight), position[2]])
+  const [startPosition] = useState<[number, number, number]>(() => [position[0], reducedMotion ? position[1] : Math.max(position[1], dropStartY), position[2]])
   const dropping = useRef(!reducedMotion)
 
   useFrame((_, delta) => {
