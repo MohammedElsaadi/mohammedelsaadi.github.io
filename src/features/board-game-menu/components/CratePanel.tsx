@@ -9,9 +9,24 @@ interface CratePanelProps {
   packing: PackingResult
   selectedCount: number
   toteSelected: boolean
+  floating?: boolean
 }
 
-export function CratePanel({ crate, tote, games, packing, selectedCount, toteSelected }: CratePanelProps) {
+function ToteOrbPreview({ tote }: { tote: CatalogContainer }) {
+  return (
+    <div className="bgm-tote-orb" aria-hidden="true">
+      <div className="bgm-tote-orb__tote">
+        <span className="bgm-tote-orb__handle bgm-tote-orb__handle--back" />
+        <span className="bgm-tote-orb__handle bgm-tote-orb__handle--front" />
+        <span className={`bgm-tote-orb__bag${tote.imageUrl ? ' has-image' : ''}`}>
+          {tote.imageUrl ? <img src={tote.imageUrl} alt="" /> : <span>Tote</span>}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+export function CratePanel({ crate, tote, games, packing, selectedCount, toteSelected, floating = false }: CratePanelProps) {
   const configured = Boolean(
     crate?.innerWidthMm && crate.innerHeightMm && crate.innerDepthMm,
   )
@@ -29,7 +44,7 @@ export function CratePanel({ crate, tote, games, packing, selectedCount, toteSel
         : `${overflowCount} game${overflowCount === 1 ? '' : 's'} stacked on top.`
 
   return (
-    <aside className="bgm-crate-panel" aria-label="Current container packing">
+    <aside className={`bgm-crate-panel${floating ? ' bgm-crate-panel--orb' : ''}`} aria-label="Current container packing">
       <div className="bgm-crate-panel__heading">
         <div>
           <span className="bgm-kicker">Packing preview</span>
@@ -39,7 +54,7 @@ export function CratePanel({ crate, tote, games, packing, selectedCount, toteSel
       </div>
       <div className="bgm-crate-panel__scene">
         {configured && crate ? (
-          <CrateScene crate={crate} tote={tote} games={games} packing={packing} toteSelected={toteSelected} />
+          <CrateScene crate={crate} tote={tote} games={games} packing={packing} toteSelected={toteSelected} orbMode={floating} />
         ) : (
           <div className="bgm-crate-panel__empty">
             <span aria-hidden="true">◇</span>
@@ -48,6 +63,7 @@ export function CratePanel({ crate, tote, games, packing, selectedCount, toteSel
           </div>
         )}
       </div>
+      {floating && toteSelected && tote ? <ToteOrbPreview tote={tote} /> : null}
       <div className="bgm-packing-status" aria-live="polite">
         <strong>{status}</strong>
         <span>
