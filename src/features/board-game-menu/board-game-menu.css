@@ -260,7 +260,7 @@
 .bgm-game-card__copy { position: relative; z-index: 2; display: grid; gap: 5px; padding: 16px 17px 19px; }
 .bgm-game-card__copy strong, .bgm-tote-card__toggle > strong { font-family: Georgia, serif; font-size: 1.22rem; }
 .bgm-game-card__copy span { color: var(--bgm-muted); font-size: .78rem; }
-.bgm-game-card__tags { color: var(--bgm-green) !important; font-weight: 800; }
+.bgm-game-card__tags { min-height: 2.5em; color: var(--bgm-green) !important; font-weight: 800; line-height: 1.25; }
 
 .bgm-tote-card { background: linear-gradient(155deg, #f8d799, #e78359); cursor: default; }
 .bgm-tote-card__toggle { width: 100%; display: grid; grid-template-rows: auto 1fr auto auto; gap: 8px; padding: 17px 17px 8px; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; }
