@@ -9,7 +9,9 @@ interface Game3DCardProps {
   matches: boolean
   rejected: boolean
   disabled?: boolean
-  onToggle: () => void
+  locked?: boolean
+  badge?: string
+  onToggle?: () => void
 }
 
 const palette = ['#d76b4b', '#d6a843', '#49806c', '#6978a8', '#9a6a9d']
@@ -32,21 +34,23 @@ function courseLabel(course: CatalogGame['course']) {
   return course[0].toUpperCase() + course.slice(1)
 }
 
-export function Game3DCard({ game, selected, matches, rejected, disabled, onToggle }: Game3DCardProps) {
+export function Game3DCard({ game, selected, matches, rejected, disabled, locked = false, badge, onToggle }: Game3DCardProps) {
   const reducedMotion = useReducedMotion()
   const motionLabel = selected ? ', selected' : ''
+  const accessory = game.itemType === 'accessory'
+  const badgeLabel = badge ?? (selected ? 'Selected' : '')
 
   return (
     <button
       type="button"
-      className={`bgm-game-card${selected ? ' is-selected' : ''}${!matches ? ' is-filtered' : ''}${rejected ? ' is-rejected' : ''}`}
+      className={`bgm-game-card${selected ? ' is-selected' : ''}${!matches ? ' is-filtered' : ''}${rejected ? ' is-rejected' : ''}${locked ? ' is-locked' : ''}`}
       aria-pressed={selected}
-      aria-label={`${game.name}${motionLabel}`}
-      disabled={disabled}
+      aria-label={`${game.name}${motionLabel}${locked ? ', always packed' : ''}`}
+      disabled={disabled || locked}
       onClick={onToggle}
     >
-      <span className="bgm-game-card__selection" aria-hidden="true">
-        {selected ? 'Selected' : ''}
+      <span className={`bgm-game-card__selection${locked ? ' bgm-game-card__selection--locked' : ''}`} aria-hidden="true">
+        {badgeLabel}
       </span>
       <View as="span" className="bgm-game-card__canvas" frames={Infinity}>
         <ambientLight intensity={1.6} />
@@ -65,11 +69,13 @@ export function Game3DCard({ game, selected, matches, rejected, disabled, onTogg
       </View>
       <span className="bgm-game-card__copy">
         <strong>{game.name}</strong>
-        <span>{courseLabel(game.course)}</span>
+        <span>{accessory ? 'Crate Accessory' : courseLabel(game.course)}</span>
         <span>
-          {game.minPlayTimeMinutes ?? '?'}–{game.maxPlayTimeMinutes ?? '?'}m · {game.minPlayers ?? '?'}–{game.maxPlayers ?? '?'} players
+          {accessory
+            ? 'Included with every crate game'
+            : `${game.minPlayTimeMinutes ?? '?'}–${game.maxPlayTimeMinutes ?? '?'}m · ${game.minPlayers ?? '?'}–${game.maxPlayers ?? '?'} players`}
         </span>
-        <span className="bgm-game-card__tags">{game.tags.map((tag) => tag.name).join(' · ') || 'No vibes yet'}</span>
+        <span className="bgm-game-card__tags">{accessory ? 'Cannot be removed' : game.tags.map((tag) => tag.name).join(' · ') || 'No vibes yet'}</span>
       </span>
     </button>
   )

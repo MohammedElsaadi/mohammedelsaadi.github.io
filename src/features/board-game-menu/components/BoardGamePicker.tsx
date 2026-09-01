@@ -138,6 +138,7 @@ export function BoardGamePicker({
     () => catalog.crateGames.filter((game) => matchesFilters(game, filters)),
     [catalog.crateGames, filters],
   )
+  const visibleCardCount = visibleToteGames.length + visibleCrateGames.length + catalog.requiredCrateItems.length
 
   const persistDraft = (next: PickerDraft) => writeStoredValue(storageKey, next)
   const updateDate = (date: string) => {
@@ -302,7 +303,7 @@ export function BoardGamePicker({
           toteSelected={toteSelected}
         />
         <section ref={browserRef} className="bgm-browser" aria-label="Board-game collection">
-          {visibleCrateGames.length + visibleToteGames.length > 0 ? <CatalogPreviewCanvas scrollRoot={browserRef} /> : null}
+          {visibleCardCount > 0 ? <CatalogPreviewCanvas scrollRoot={browserRef} /> : null}
           <div className="bgm-browser__filters">
             <SecondaryFilterBar filters={filters} setFilters={setFilters} tags={catalog.tags} />
           </div>
@@ -326,6 +327,17 @@ export function BoardGamePicker({
                 rejected={rejectedId === game.id}
                 disabled={!crate?.innerWidthMm || !crate.innerHeightMm || !crate.innerDepthMm}
                 onToggle={() => toggleGame(game)}
+              />
+            ))}
+            {catalog.requiredCrateItems.map((accessory) => (
+              <Game3DCard
+                key={accessory.id}
+                game={accessory}
+                selected={selectedIds.length > 0}
+                matches
+                rejected={false}
+                locked
+                badge="Always packed"
               />
             ))}
           </div>
