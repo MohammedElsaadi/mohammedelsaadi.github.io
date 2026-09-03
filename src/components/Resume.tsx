@@ -1,4 +1,3 @@
-import resumePdf from "../assets/Mohammed-Elsaadi-Resume.pdf";
 
 export function Resume() {
   return (
@@ -9,12 +8,12 @@ export function Resume() {
           You can view and download my resume below.
         </p>
         <a
-          href={resumePdf}
-          download="Mohammed Elsaadi Resume.pdf"
-          className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-        >
-          Download Resume
-        </a>
+  href="/Mohammed-Elsaadi-Resume.pdf"
+  download="Mohammed Elsaadi Resume.pdf"
+  className="mt-auto inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition w-fit"
+>
+  Download Resume
+</a>
       </div>
     </section>
   );

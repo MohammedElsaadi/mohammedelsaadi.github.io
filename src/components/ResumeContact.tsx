@@ -1,5 +1,4 @@
 import * as React from "react";
-import resumePdf from "../assets/Mohammed-Elsaadi-Resume.pdf";
 import { FiCopy, FiCheck, FiMail } from "react-icons/fi";
 import { FaLinkedin } from "react-icons/fa";
 
@@ -31,12 +30,12 @@ export function ResumeContact() {
             </p>
 
             <a
-                href={resumePdf}
-                download="Mohammed Elsaadi Resume.pdf"
-                className="mt-auto inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition w-fit"
-            >
-                Download Resume
-            </a>
+  href="/Mohammed-Elsaadi-Resume.pdf"
+  download="Mohammed Elsaadi Resume.pdf"
+  className="mt-auto inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition w-fit"
+>
+  Download Resume
+</a>
         </div>
 
         {/* Contact Card */}
