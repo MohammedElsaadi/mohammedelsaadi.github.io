@@ -1,17 +1,73 @@
+import { Link } from "react-router-dom";
+
 const projects = [
   {
-    title: 'Sign Management Mobile Platform',
+    title: 'AI-Powered Sign Management Platform',
     company: 'Intellino Technology Inc.',
-    period: 'Sept 2025 – Present',
+    period: 'Sept 2025 – June 2026',
     description:
-      'Architected and developed a cross-platform mobile application for Android and iOS to support scalable device provisioning, content management, and SaaS deployment.',
+      'Built a cloud-connected retail platform for provisioning digital signs, managing content, and generating customer-facing messaging using AI-powered data pipelines.',
     bullets: [
-      'Built with Flutter, Dart, .NET, C#, PostgreSQL, and Google Cloud Platform',
-      'Designed cloud architecture including authentication, storage, APIs, and data pipelines',
-      'Focused on scalability, maintainability, and production-ready SaaS delivery',
+      'Developed cross-platform Flutter applications for Android and iOS device provisioning',
+      'Built C#/.NET APIs and GCP services for device, user, and content management',
+      'Developed AI-powered pipelines that processed business reviews and generated concise sign-ready messaging',
+      'Integrated external services, cloud messaging, storage, authentication, and physical devices',
     ],
-    tech: ['Flutter', 'Dart', '.NET', 'C#', 'PostgreSQL', 'GCP'],
+    tech: ['Flutter', 'Dart', '.NET', 'C#', 'PostgreSQL', 'GCP', 'AI/ML', 'Docker'],
   },
+  {
+  title: '3D Board Game Crate Planner',
+  company: 'Personal Project',
+  period: '2026',
+  url: '/games/board-game-menu',
+  description:
+    'Designed and built an interactive application for selecting board games and visually determining how they fit inside a real-world storage crate.',
+  bullets: [
+    'Built a Three.js packing interface using real board-game box dimensions, constrained rotations, and stacking behavior',
+    'Created responsive desktop and mobile experiences with persistent menus and game administration',
+    'Built a serverless backend using Cloudflare Workers, D1, and R2',
+    'Used AI-augmented engineering to take the initial application from concept through design, implementation, debugging, and deployment in a single evening',
+  ],
+  tech: [
+    'React',
+    'TypeScript',
+    'Three.js',
+    'Cloudflare Workers',
+    'D1',
+    'R2',
+    'AI-Augmented Development',
+  ],
+},
+
+{
+  title: 'Manufacturing Vision Image Platform',
+  company: 'Magna Electric Vehicle Structures',
+  period: '2024 – 2025',
+  description:
+    'Built a manufacturing image pipeline and lookup system that connected computer-vision imagery from production stations with corresponding production records.',
+  bullets: [
+    'Created a Python pipeline to move station-generated images from local plant storage into AWS S3',
+    'Linked stored imagery with manufacturing records in SQL for traceability and retrieval',
+    'Built tooling for quickly locating and reviewing production imagery associated with specific manufacturing data',
+    'Connected factory-floor infrastructure, cloud storage, and internal software into a single workflow',
+  ],
+  tech: ['Python', 'AWS S3', 'SQL', 'C#', '.NET', 'Manufacturing Systems'],
+},
+
+{
+  title: 'Security Gate Operations Dashboard',
+  company: 'Magna Electric Vehicle Structures',
+  period: '2024 – 2025',
+  description:
+    'Developed an internal operations interface that gave plant security a centralized view of facility entrances and controls for day-to-day gate operations.',
+  bullets: [
+    'Integrated live camera previews for multiple facility entrances into a single dashboard',
+    'Connected the application with gate-control APIs to allow authorized users to operate gate arms from the interface',
+    'Designed the UI around rapid visibility and straightforward control for security personnel',
+    'Consolidated previously separate physical-security systems into a more accessible operational workflow',
+  ],
+  tech: ['React', 'TypeScript', 'C#', '.NET', 'REST APIs', 'Camera Systems'],
+},
   {
     title: 'Production Tracking & Shipment Forecasting Dashboard',
     company: 'Magna Electric Vehicle Structures',
@@ -94,7 +150,11 @@ export function Projects() {
                   </p>
                 </div>
               </div>
-
+            {project.url && (
+              <Link to={project.url} className="project-link">
+                Live Demo
+              </Link>
+            )}
               <p className="text-gray-700 mb-4">{project.description}</p>
 
               <ul className="list-disc pl-5 space-y-2 text-gray-700 mb-4">

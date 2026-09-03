@@ -30,6 +30,13 @@ export function About() {
           about how to keep things simple, maintainable, and actually useful long term.
         </p>
 
+        <p className="text-md md:text-xl text-black mb-4">
+          More recently, I’ve been building AI-powered retail technology, including production 
+          pipelines that process business reviews, identify useful customer feedback, and generate concise 
+          content for connected digital signs. I also use AI heavily throughout my engineering workflow for implementation, 
+          debugging, architecture exploration, testing, and rapid iteration, while keeping the technical decisions and system 
+          design firmly in my hands.</p>
+
         <p className="text-md md:text-xl text-black">
           Outside of work, I like keeping things creative. I’m into puzzles, board games, and 
           anything that involves problem solving or strategy. I also enjoy bird watching, and 
