@@ -37,11 +37,7 @@ export function Hero() {
           </h1>
           <h3 className="text-lg md:text-xl underline">Senior Full-Stack Software Developer</h3>
           <p className="text-md md:text-xl mb-6 text-gray-600">
-            I’m a full-stack developer who loves building creative and effective software that solves real problems and creates a meaningful impact.
-
-I enjoy working across the stack, from designing clean user experiences to building reliable backend systems. My main strengths are in C#, .NET, and React, and I’m especially passionate about taking ideas from early concept to polished, practical products.
-
-          </p>
+            I’m a Senior Full-Stack Developer with 8+ years of experience building production software across SaaS, automotive manufacturing, fintech, mobile, and R&D. <br/> I work across C#/.NET, React/TypeScript, cloud, mobile, AI-powered products, and real-world device integrations, with a focus on taking difficult ideas from concept through production.          </p>
           <div className="flex gap-4 flex-wrap justify-center w-full">
             <a
               href="#about"
@@ -65,7 +61,7 @@ I enjoy working across the stack, from designing clean user experiences to build
               to="/games"
               className="px-5 py-2 bg-[var(--color-lighter-emerald)] text-white rounded-lg font-semibold hover:bg-[var(--color-darker-emerald)] transition"
             >
-              Games
+              Games & Experiments
             </Link>
           </div>
         </div>
