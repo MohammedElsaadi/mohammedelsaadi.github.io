@@ -36,11 +36,24 @@ type Stroke = {
 
 type SaveState = 'saved' | 'saving' | 'limited';
 
+type Quadrant = {
+  id: string;
+  label: string;
+  originX: 0 | 0.5;
+  originY: 0 | 0.5;
+};
+
 const COLORS = ['#29242f', '#d94b4b', '#176879'] as const;
 const COOKIE_META = 'sonora_board_chunks';
 const COOKIE_PREFIX = 'sonora_board_';
 const COOKIE_CHUNK_SIZE = 3000;
 const MAX_COOKIE_CHUNKS = 12;
+const QUADRANTS: Quadrant[] = [
+  { id: 'top-left', label: 'Top left', originX: 0, originY: 0 },
+  { id: 'top-right', label: 'Top right', originX: 0.5, originY: 0 },
+  { id: 'bottom-left', label: 'Bottom left', originX: 0, originY: 0.5 },
+  { id: 'bottom-right', label: 'Bottom right', originX: 0.5, originY: 0.5 },
+];
 
 function getCookie(name: string) {
   if (typeof document === 'undefined') return undefined;
@@ -186,8 +199,13 @@ function drawStroke(
   stroke: Stroke,
   canvasWidth: number,
   canvasHeight: number,
+  quadrant: Quadrant,
 ) {
-  const scale = Math.min(canvasWidth, canvasHeight) / 600;
+  const scale = Math.min(canvasWidth, canvasHeight) / 300;
+  const visiblePoints = stroke.points.map((point) => ({
+    x: (point.x - quadrant.originX) * 2,
+    y: (point.y - quadrant.originY) * 2,
+  }));
   context.save();
   context.globalCompositeOperation = stroke.tool === 'eraser' ? 'destination-out' : 'source-over';
   context.strokeStyle = stroke.color;
@@ -196,13 +214,13 @@ function drawStroke(
   context.lineCap = 'round';
   context.lineJoin = 'round';
 
-  const first = stroke.points[0];
+  const first = visiblePoints[0];
   if (!first) {
     context.restore();
     return;
   }
 
-  if (stroke.points.length === 1) {
+  if (visiblePoints.length === 1) {
     context.beginPath();
     context.arc(first.x * canvasWidth, first.y * canvasHeight, (stroke.width * scale) / 2, 0, Math.PI * 2);
     context.fill();
@@ -212,7 +230,7 @@ function drawStroke(
 
   context.beginPath();
   context.moveTo(first.x * canvasWidth, first.y * canvasHeight);
-  stroke.points.slice(1).forEach((point) => context.lineTo(point.x * canvasWidth, point.y * canvasHeight));
+  visiblePoints.slice(1).forEach((point) => context.lineTo(point.x * canvasWidth, point.y * canvasHeight));
   context.stroke();
   context.restore();
 }
@@ -222,13 +240,16 @@ function SonoraWhiteboard() {
   const [redoStack, setRedoStack] = useState<Stroke[]>([]);
   const [tool, setTool] = useState<Tool>('pen');
   const [color, setColor] = useState<string>(COLORS[0]);
+  const [activeQuadrantIndex, setActiveQuadrantIndex] = useState(0);
   const [saveState, setSaveState] = useState<SaveState>('saved');
   const [confirmClear, setConfirmClear] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const strokesRef = useRef(strokes);
+  const quadrantRef = useRef<Quadrant>(QUADRANTS[0]);
   const activeStrokeRef = useRef<Stroke | null>(null);
+  const activeQuadrant = QUADRANTS[activeQuadrantIndex];
 
   const drawAll = useCallback(() => {
     const canvas = canvasRef.current;
@@ -239,7 +260,7 @@ function SonoraWhiteboard() {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
     context.clearRect(0, 0, width, height);
-    strokesRef.current.forEach((stroke) => drawStroke(context, stroke, width, height));
+    strokesRef.current.forEach((stroke) => drawStroke(context, stroke, width, height, quadrantRef.current));
   }, []);
 
   useLayoutEffect(() => {
@@ -275,6 +296,11 @@ function SonoraWhiteboard() {
   }, [drawAll, strokes]);
 
   useEffect(() => {
+    quadrantRef.current = activeQuadrant;
+    drawAll();
+  }, [activeQuadrant, drawAll]);
+
+  useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (confirmClear && !dialog.open) dialog.showModal();
@@ -283,9 +309,12 @@ function SonoraWhiteboard() {
 
   const pointFromEvent = (event: ReactPointerEvent<HTMLCanvasElement>): Point => {
     const rectangle = event.currentTarget.getBoundingClientRect();
+    const quadrant = quadrantRef.current;
+    const localX = Math.max(0, Math.min(1, (event.clientX - rectangle.left) / rectangle.width));
+    const localY = Math.max(0, Math.min(1, (event.clientY - rectangle.top) / rectangle.height));
     return {
-      x: Math.max(0, Math.min(1, (event.clientX - rectangle.left) / rectangle.width)),
-      y: Math.max(0, Math.min(1, (event.clientY - rectangle.top) / rectangle.height)),
+      x: quadrant.originX + localX / 2,
+      y: quadrant.originY + localY / 2,
     };
   };
 
@@ -301,7 +330,15 @@ function SonoraWhiteboard() {
     };
     activeStrokeRef.current = stroke;
     const context = event.currentTarget.getContext('2d');
-    if (context) drawStroke(context, stroke, event.currentTarget.clientWidth, event.currentTarget.clientHeight);
+    if (context) {
+      drawStroke(
+        context,
+        stroke,
+        event.currentTarget.clientWidth,
+        event.currentTarget.clientHeight,
+        quadrantRef.current,
+      );
+    }
   };
 
   const continueDrawing = (event: ReactPointerEvent<HTMLCanvasElement>) => {
@@ -310,7 +347,7 @@ function SonoraWhiteboard() {
     event.preventDefault();
     const point = pointFromEvent(event);
     const previous = stroke.points[stroke.points.length - 1];
-    if (Math.hypot(point.x - previous.x, point.y - previous.y) < 0.003) return;
+    if (Math.hypot(point.x - previous.x, point.y - previous.y) < 0.0015) return;
 
     stroke.points.push(point);
     const context = event.currentTarget.getContext('2d');
@@ -320,6 +357,7 @@ function SonoraWhiteboard() {
         { ...stroke, points: [previous, point] },
         event.currentTarget.clientWidth,
         event.currentTarget.clientHeight,
+        quadrantRef.current,
       );
     }
   };
@@ -381,7 +419,7 @@ function SonoraWhiteboard() {
         <div className="sonora-heading">
           <p className="sonora-kicker">Score sheet</p>
           <h1>Sonora whiteboard</h1>
-          <p>Draw with a mouse, finger, or pen. Your marks return automatically on this browser.</p>
+          <p>Choose a quadrant, then draw with a mouse, finger, or pen. Your marks return automatically.</p>
         </div>
         <div className={`sonora-save-status sonora-save-status--${saveState}`} aria-live="polite">
           {saveState === 'saved' ? <LuCheck aria-hidden="true" /> : <LuRotateCcw aria-hidden="true" />}
@@ -453,9 +491,38 @@ function SonoraWhiteboard() {
           </button>
         </div>
 
+        <nav className="sonora-quadrant-nav" aria-label="Score sheet quadrants">
+          <div className="sonora-quadrant-copy">
+            <span>Zoomed drawing area</span>
+            <strong>{activeQuadrant.label}</strong>
+          </div>
+          <div className="sonora-quadrant-buttons" role="group" aria-label="Choose a quadrant">
+            {QUADRANTS.map((quadrant, index) => (
+              <button
+                key={quadrant.id}
+                type="button"
+                aria-pressed={activeQuadrantIndex === index}
+                onClick={() => setActiveQuadrantIndex(index)}
+              >
+                <span className="sonora-quadrant-number" aria-hidden="true">{index + 1}</span>
+                {quadrant.label}
+              </button>
+            ))}
+          </div>
+        </nav>
+
         <div className="sonora-board-frame">
           <div className="sonora-board" ref={boardRef}>
-            <img src={scoreSheet} alt="Blank Sonora board game score sheet" draggable="false" />
+            <img
+              className="sonora-sheet-image"
+              src={scoreSheet}
+              alt="Blank Sonora board game score sheet"
+              draggable="false"
+              style={{
+                left: `${activeQuadrant.originX * -200}%`,
+                top: `${activeQuadrant.originY * -200}%`,
+              }}
+            />
             <canvas
               ref={canvasRef}
               className={`sonora-canvas sonora-canvas--${tool}`}
