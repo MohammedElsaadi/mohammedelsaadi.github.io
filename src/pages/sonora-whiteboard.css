@@ -225,9 +225,94 @@
   padding: 0.65rem 0.15rem 0.15rem;
 }
 
+.sonora-quadrant-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.65rem;
+  padding: 0.65rem;
+  border: 1px solid rgba(63, 47, 64, 0.12);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.sonora-quadrant-copy {
+  display: flex;
+  min-width: 9.5rem;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.sonora-quadrant-copy span {
+  color: #776b78;
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sonora-quadrant-copy strong {
+  margin-top: 0.22rem;
+  color: #332b36;
+  font-size: 1rem;
+}
+
+.sonora-quadrant-buttons {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.sonora-quadrant-buttons button {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0 0.75rem;
+  border: 1px solid rgba(63, 47, 64, 0.14);
+  border-radius: 0.72rem;
+  color: #5d5260;
+  background: rgba(255, 255, 255, 0.66);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 780;
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+
+.sonora-quadrant-buttons button:hover {
+  transform: translateY(-0.08rem);
+  border-color: rgba(38, 99, 103, 0.45);
+  color: #244f54;
+}
+
+.sonora-quadrant-buttons button[aria-pressed='true'] {
+  border-color: #28666c;
+  color: white;
+  background: #28666c;
+  box-shadow: 0 0.35rem 1rem rgba(32, 91, 96, 0.22);
+}
+
+.sonora-quadrant-number {
+  display: grid;
+  width: 1.45rem;
+  height: 1.45rem;
+  place-items: center;
+  border-radius: 0.42rem;
+  color: inherit;
+  background: rgba(52, 43, 55, 0.08);
+  font-size: 0.75rem;
+}
+
+.sonora-quadrant-buttons button[aria-pressed='true'] .sonora-quadrant-number {
+  background: rgba(255, 255, 255, 0.17);
+}
+
 .sonora-board {
   position: relative;
-  width: min(100%, calc(100vh - 11rem));
+  width: min(100%, 72rem);
   aspect-ratio: 1;
   margin: 0 auto;
   overflow: hidden;
@@ -237,7 +322,6 @@
   box-shadow: 0 0.8rem 2rem rgba(47, 35, 47, 0.16);
 }
 
-.sonora-board img,
 .sonora-canvas {
   position: absolute;
   inset: 0;
@@ -246,7 +330,11 @@
   height: 100%;
 }
 
-.sonora-board img {
+.sonora-board .sonora-sheet-image {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  max-width: none;
   user-select: none;
   pointer-events: none;
 }
@@ -426,6 +514,29 @@
 
   .sonora-board-frame {
     padding-top: 0.45rem;
+  }
+
+  .sonora-quadrant-nav {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0.55rem;
+  }
+
+  .sonora-quadrant-copy {
+    min-width: 0;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 0 0.15rem;
+  }
+
+  .sonora-quadrant-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sonora-quadrant-buttons button {
+    min-height: 2.8rem;
   }
 
   .sonora-board {
