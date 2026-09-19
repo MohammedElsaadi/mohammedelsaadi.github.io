@@ -1,0 +1,446 @@
+.sonora-page {
+  min-height: 100vh;
+  padding: 1.5rem;
+  color: #2d2731;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 236, 185, 0.7), transparent 28rem),
+    radial-gradient(circle at 88% 22%, rgba(190, 221, 210, 0.66), transparent 30rem),
+    linear-gradient(145deg, #f5d9cd 0%, #d9c7d7 58%, #b7afca 100%);
+}
+
+.sonora-header {
+  width: min(100%, 76rem);
+  margin: 0 auto 1.25rem;
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) auto minmax(8rem, 1fr);
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.sonora-back {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 0.9rem;
+  border: 1px solid rgba(53, 43, 57, 0.18);
+  border-radius: 999px;
+  color: #352b39;
+  background: rgba(255, 255, 255, 0.54);
+  font-weight: 750;
+  text-decoration: none;
+  box-shadow: 0 0.4rem 1.2rem rgba(57, 41, 53, 0.08);
+  backdrop-filter: blur(0.75rem);
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.sonora-back:hover {
+  transform: translateX(-0.15rem);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.sonora-heading {
+  text-align: center;
+}
+
+.sonora-kicker {
+  margin: 0 0 0.2rem;
+  color: #a23f47;
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.sonora-heading h1 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2rem, 4.5vw, 3.6rem);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+}
+
+.sonora-heading > p:last-child {
+  margin: 0.55rem auto 0;
+  max-width: 34rem;
+  color: #625866;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.sonora-save-status {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  color: #285c4e;
+  background: rgba(242, 255, 248, 0.7);
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.sonora-save-status--saving svg {
+  animation: sonora-spin 1s linear infinite;
+}
+
+.sonora-save-status--limited {
+  color: #842e37;
+  background: rgba(255, 234, 232, 0.82);
+}
+
+.sonora-workspace {
+  width: min(100%, 76rem);
+  margin: 0 auto;
+  padding: 0.65rem;
+  border: 1px solid rgba(63, 47, 64, 0.18);
+  border-radius: 1.65rem;
+  background: rgba(255, 251, 247, 0.58);
+  box-shadow: 0 1.8rem 5rem rgba(62, 39, 57, 0.21);
+  backdrop-filter: blur(1rem);
+}
+
+.sonora-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 4.65rem;
+  padding: 0.55rem;
+  border-radius: 1.1rem;
+  background: #302a34;
+  color: white;
+}
+
+.sonora-tool-group,
+.sonora-color-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sonora-tool-group--history {
+  margin-left: auto;
+}
+
+.sonora-tool-button,
+.sonora-icon-button,
+.sonora-clear-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 3.5rem;
+  border: 0;
+  border-radius: 0.78rem;
+  color: #efe9ed;
+  background: transparent;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 760;
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+
+.sonora-tool-button {
+  flex-direction: column;
+  min-width: 4.6rem;
+}
+
+.sonora-tool-button svg,
+.sonora-icon-button svg,
+.sonora-clear-button svg {
+  width: 1.18rem;
+  height: 1.18rem;
+}
+
+.sonora-tool-button:hover,
+.sonora-icon-button:hover,
+.sonora-tool-button[aria-pressed='true'] {
+  color: white;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.sonora-tool-button[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.sonora-color-group {
+  min-height: 3rem;
+  padding: 0 0.7rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.sonora-swatch {
+  position: relative;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0.2rem solid #302a34;
+  border-radius: 50%;
+  background: var(--swatch-color);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.sonora-swatch:hover,
+.sonora-swatch[aria-pressed='true'] {
+  transform: scale(1.12);
+}
+
+.sonora-swatch[aria-pressed='true'] {
+  box-shadow: 0 0 0 2px #302a34, 0 0 0 4px #fff2c9;
+}
+
+.sonora-icon-button {
+  flex-direction: column;
+  min-width: 3.8rem;
+}
+
+.sonora-clear-button {
+  min-width: 5.5rem;
+  padding: 0 0.9rem;
+  color: #ffd8d7;
+  background: rgba(207, 71, 72, 0.18);
+}
+
+.sonora-clear-button:hover {
+  color: white;
+  background: #b83f46;
+}
+
+.sonora-icon-button:disabled,
+.sonora-clear-button:disabled {
+  opacity: 0.36;
+  cursor: not-allowed;
+}
+
+.sonora-board-frame {
+  padding: 0.65rem 0.15rem 0.15rem;
+}
+
+.sonora-board {
+  position: relative;
+  width: min(100%, calc(100vh - 11rem));
+  aspect-ratio: 1;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 0.55rem solid rgba(255, 255, 255, 0.86);
+  border-radius: 1rem;
+  background: #f1d5d0;
+  box-shadow: 0 0.8rem 2rem rgba(47, 35, 47, 0.16);
+}
+
+.sonora-board img,
+.sonora-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.sonora-board img {
+  user-select: none;
+  pointer-events: none;
+}
+
+.sonora-canvas {
+  z-index: 1;
+  touch-action: none;
+}
+
+.sonora-canvas--pen {
+  cursor: crosshair;
+}
+
+.sonora-canvas--eraser {
+  cursor: cell;
+}
+
+.sonora-dialog {
+  width: min(calc(100% - 2rem), 27rem);
+  padding: 1.5rem;
+  border: 1px solid rgba(54, 42, 55, 0.15);
+  border-radius: 1.3rem;
+  color: #312a34;
+  background: #fffaf7;
+  box-shadow: 0 2rem 6rem rgba(36, 25, 36, 0.34);
+}
+
+.sonora-dialog::backdrop {
+  background: rgba(39, 31, 42, 0.58);
+  backdrop-filter: blur(0.2rem);
+}
+
+.sonora-dialog-icon {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 0.9rem;
+  color: #ae3942;
+  background: #ffe5e1;
+}
+
+.sonora-dialog-icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.sonora-dialog h2 {
+  margin: 1rem 0 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.65rem;
+}
+
+.sonora-dialog p {
+  margin: 0.55rem 0 0;
+  color: #6c616c;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.sonora-dialog-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+  margin-top: 1.4rem;
+}
+
+.sonora-dialog-actions button {
+  min-height: 3rem;
+  border: 1px solid rgba(54, 42, 55, 0.18);
+  border-radius: 0.75rem;
+  color: #3a323b;
+  background: white;
+  font: inherit;
+  font-weight: 780;
+  cursor: pointer;
+}
+
+.sonora-dialog-actions .sonora-dialog-confirm {
+  border-color: #a93841;
+  color: white;
+  background: #a93841;
+}
+
+.sonora-page button:focus-visible,
+.sonora-page a:focus-visible,
+.sonora-dialog button:focus-visible {
+  outline: 0.2rem solid #147a91;
+  outline-offset: 0.15rem;
+}
+
+@keyframes sonora-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .sonora-page {
+    padding: 0.8rem;
+  }
+
+  .sonora-header {
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .sonora-heading {
+    text-align: left;
+  }
+
+  .sonora-heading h1 {
+    font-size: clamp(1.8rem, 8vw, 2.6rem);
+  }
+
+  .sonora-heading > p:last-child {
+    font-size: 0.88rem;
+  }
+
+  .sonora-save-status {
+    grid-column: 1 / -1;
+    justify-self: start;
+    min-height: 2rem;
+  }
+
+  .sonora-workspace {
+    padding: 0.45rem;
+    border-radius: 1.2rem;
+  }
+
+  .sonora-toolbar {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.4rem;
+  }
+
+  .sonora-tool-button,
+  .sonora-icon-button,
+  .sonora-clear-button {
+    min-height: 3.1rem;
+    flex-direction: row;
+  }
+
+  .sonora-tool-button {
+    min-width: 3.1rem;
+    padding: 0 0.7rem;
+  }
+
+  .sonora-tool-button span,
+  .sonora-icon-button span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .sonora-color-group {
+    min-height: 2.75rem;
+    padding: 0 0.5rem;
+  }
+
+  .sonora-tool-group--history {
+    margin-left: 0;
+  }
+
+  .sonora-icon-button {
+    min-width: 3.1rem;
+  }
+
+  .sonora-clear-button {
+    margin-left: auto;
+    min-width: auto;
+  }
+
+  .sonora-board-frame {
+    padding-top: 0.45rem;
+  }
+
+  .sonora-board {
+    width: 100%;
+    border-width: 0.35rem;
+    border-radius: 0.65rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sonora-page *,
+  .sonora-page *::before,
+  .sonora-page *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import SplendidCover from "../assets/splendidrivalrycover.png";
+import SonoraScoreSheet from "../assets/sonora-score-sheet.png";
 
 function Games() {
   return (
@@ -28,6 +29,24 @@ function Games() {
         </section>
 
         <section className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <Link
+            to="sonora-score-sheet"
+            className="group overflow-hidden rounded-2xl bg-white text-left text-gray-900 shadow-2xl transition hover:-translate-y-1 hover:shadow-emerald-950/40"
+          >
+            <div className="h-56 overflow-hidden bg-[#e7ced1]">
+              <img
+                src={SonoraScoreSheet}
+                alt="Sonora score sheet"
+                className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              />
+            </div>
+            <div className="p-6">
+              <p className="text-sm font-bold uppercase tracking-wider text-emerald-700">Digital score sheet</p>
+              <h2 className="mt-2 text-2xl font-extrabold">Sonora Whiteboard</h2>
+              <p className="mt-3 text-gray-600">Mark the original score sheet and keep every stroke in this browser.</p>
+              <p className="mt-5 font-semibold text-emerald-700 transition group-hover:translate-x-1">Open score sheet →</p>
+            </div>
+          </Link>
           <Link
             to="board-game-menu"
             className="group overflow-hidden rounded-2xl bg-amber-50 text-left text-gray-900 shadow-2xl transition hover:-translate-y-1 hover:shadow-emerald-950/40"

@@ -8,6 +8,7 @@ import SplendidRivalry from './pages/SplendidRivalry.tsx';
 const BoardGameMenu = lazy(() => import('./pages/BoardGameMenu.tsx'));
 const BoardGameMenuSaved = lazy(() => import('./pages/BoardGameMenuSaved.tsx'));
 const BoardGameMenuAdmin = lazy(() => import('./pages/BoardGameMenuAdmin.tsx'));
+const SonoraWhiteboard = lazy(() => import('./pages/SonoraWhiteboard.tsx'));
 
 function App() {
 return (
@@ -16,6 +17,7 @@ return (
         <Route path="/" element={<Home />} />
         <Route path="/games" element={<Games />} />
         <Route path="/games/splendid-rivalry" element={<SplendidRivalry />} />
+        <Route path="/games/sonora-score-sheet" element={<SonoraWhiteboard />} />
         <Route path="/games/board-game-menu" element={<BoardGameMenu />} />
         <Route path="/games/board-game-menu/menu/:menuId" element={<BoardGameMenuSaved />} />
         <Route path="/games/board-game-menu/admin" element={<BoardGameMenuAdmin />} />
