@@ -4,6 +4,8 @@ import type { ServerMessage, Snapshot } from '../../../shared/trains/types'
 import { nextTestAction } from '../policy'
 import { CITY_BY_ID, ROUTES } from '../../../shared/trains/board-data'
 import { trackSlots } from '../../../src/features/trains/board3d/geometry'
+import { boardCameraFraming, CAMERA_OFFSET } from '../../../src/features/trains/board3d/camera-settings'
+import { OrthographicCamera, Vector3 } from 'three'
 
 test('two isolated browsers play a whole game, rejoin mid-draw, and revoke a taken-over seat', async ({ page }) => {
   const secondBrowser = await chromium.launch({ channel: 'msedge' })
@@ -98,8 +100,11 @@ test('all 100 physical tracks can be selected on the actual 3D canvas', async ({
     for (const route of ROUTES) {
       let found=false
       for (const slot of trackSlots(route)) {
-        await canvas.scrollIntoViewIfNeeded(); const box=(await canvas.boundingBox())!, zoom=Math.min(box.width/23.3,box.height/15.5)
-        await page.mouse.click(box.x+box.width/2+slot.x*zoom,box.y+box.height/2+(slot.z*24/Math.hypot(24,6)-.1*6/Math.hypot(24,6))*zoom)
+        await canvas.scrollIntoViewIfNeeded(); const box=(await canvas.boundingBox())!
+        const camera = new OrthographicCamera(-box.width/2, box.width/2, box.height/2, -box.height/2, .1, 80)
+        camera.position.set(...CAMERA_OFFSET); camera.zoom = boardCameraFraming(box.width,box.height).fitZoom; camera.lookAt(0,0,0); camera.updateProjectionMatrix(); camera.updateMatrixWorld()
+        const point = new Vector3(slot.x,.1,slot.z).project(camera)
+        await page.mouse.click(box.x+(point.x+1)*box.width/2,box.y+(1-point.y)*box.height/2)
         const dialog=page.getByRole('dialog')
         if (await dialog.isVisible()) { found=await dialog.getByRole('heading',{name:`${CITY_BY_ID[route.cityA].name} → ${CITY_BY_ID[route.cityB].name}`,exact:true}).isVisible(); await page.keyboard.press('Escape') }
         if (found) break
@@ -107,6 +112,36 @@ test('all 100 physical tracks can be selected on the actual 3D canvas', async ({
       if (!found) failures.push(route.id)
     }
     expect(failures,'Tracks obscured or not selectable at any segment').toEqual([])
+    // Wheel zoom must stop at 60% of the previous maximum visible extent.
+    async function landmarks() {
+      const west = (await page.locator('.rail-city-label').getByText('San Francisco',{exact:true}).boundingBox())!
+      const east = (await page.locator('.rail-city-label').getByText('Miami',{exact:true}).boundingBox())!
+      return [{ x:west.x+west.width/2, y:west.y+west.height/2 },{ x:east.x+east.width/2, y:east.y+east.height/2 }]
+    }
+    const separation = async () => { const [a,b]=await landmarks(); return Math.hypot(a.x-b.x,a.y-b.y) }
+    const fittedSeparation = await separation()
+    await canvas.scrollIntoViewIfNeeded(); const bounds=(await canvas.boundingBox())!
+    await page.mouse.move(bounds.x+bounds.width/2,bounds.y+bounds.height/2)
+    for (let i=0;i<40;i++) await page.mouse.wheel(0,120)
+    const frame = boardCameraFraming(bounds.width,bounds.height), expectedRatio=Math.min(10/0.6,frame.fitZoom)/frame.fitZoom
+    await expect.poll(async () => await separation()/fittedSeparation).toBeCloseTo(expectedRatio,2)
+    const limitedLandmarks=await landmarks()
+    for (let i=0;i<10;i++) await page.mouse.wheel(0,120)
+    await expect.poll(async () => await separation()/fittedSeparation).toBeCloseTo(expectedRatio,2)
+    // A saved pre-update camera keeps its pan, adopts the new angle and is
+    // clamped to the new zoom limit when the room reloads.
+    await page.evaluate(() => {
+      const key=Object.keys(sessionStorage).find(key=>key.startsWith('trains.camera.'))!
+      sessionStorage.setItem(key,JSON.stringify({ position:[0,24,6],target:[0,0,0],zoom:10 }))
+    })
+    await page.reload(); await expect(page.locator('.rail-city-label')).toHaveCount(36)
+    await canvas.scrollIntoViewIfNeeded()
+    await expect.poll(async () => await separation()/fittedSeparation).toBeCloseTo(expectedRatio,2)
+    const restoredLandmarks=await landmarks()
+    for (let i=0;i<2;i++) expect(restoredLandmarks[i].x).toBeCloseTo(limitedLandmarks[i].x,0)
+    await page.getByRole('button',{name:'Reset view',exact:true}).click()
+    await expect.poll(separation).toBeCloseTo(fittedSeparation,0)
+    await page.locator('.rail-board-wrap').screenshot({path:'test-results/railway-camera.png'})
     await page.screenshot({path:'test-results/railway-board.png',fullPage:true})
   } finally {await context.close()}
 })

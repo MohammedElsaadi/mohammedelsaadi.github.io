@@ -119,6 +119,8 @@ Server messages also include `ACK {actionId,stateVersion}`, `ERROR {actionId?,co
 
 ## Presentation and accessibility
 
+The board camera uses a gentle diagonal orthographic view. Maximum zoom-out shows 60% of the previous maximum visible width/depth (`minZoom = 10 / 0.6`); small viewports may still zoom out enough to fit the whole tabletop. Reset view fits the projected board bounds at the new angle. Saved views retain their pan and zoom within the new limits and adopt the updated angle automatically.
+
 The board uses original procedural parchment, continental contours, walnut rim, track slots, city markers, high-contrast HTML city labels and miniature 3D trains. Each claimed segment has exactly `route.length` distinct pieces, with separate parallel lanes. Track hover identifies endpoints/color/length; selecting opens an HTML payment dialog and ghost train preview. Committed placements animate briefly and never block gameplay; reduced motion skips movement. Wheel/pinch zoom, drag pan, reset-to-fit and locally persisted camera state are available.
 
 Native dialogs provide modal focus trapping and Escape dismissal. The text route list exposes all 100 tracks to keyboard/touch users, supports search, and permits full play if WebGL fails. Card names, numeric counts, track names, payment descriptions and player colors avoid color-only information. Market/hand trays scroll horizontally on small devices. Player panels and private tickets are collapsible. Sound is opt-in and off by default; no external audio assets are used.

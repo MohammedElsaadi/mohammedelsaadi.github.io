@@ -9,6 +9,7 @@ import type { PieceColor, Route, Snapshot, TicketResult } from '../../../../shar
 import { COLOR_HEX } from '../components/palette'
 import { cityLabelPosition, cityPosition, trackSlots } from './geometry'
 import { parchmentTexture } from './parchment'
+import { boardCameraFraming, CAMERA_OFFSET, MAX_CAMERA_ZOOM } from './camera-settings'
 
 class BoardBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false }
@@ -48,15 +49,22 @@ const Track = memo(function Track({ route, ownerColor, selected, previewColor, e
 })
 function Camera({ reset, storageKey }: { reset: number; storageKey: string }) {
   const { camera, size, invalidate } = useThree(), controls = useRef<React.ComponentRef<typeof MapControls>>(null)
+  const { fitZoom, minZoom } = boardCameraFraming(size.width, size.height)
   useEffect(() => {
-    camera.position.set(0,24,6); camera.zoom = Math.min(size.width/23.3,size.height/15.5); camera.lookAt(0,0,0); controls.current?.target.set(0,0,0)
+    camera.position.set(...CAMERA_OFFSET); camera.zoom = fitZoom; controls.current?.target.set(0,0,0)
     if (reset === 0) try {
-      const saved = JSON.parse(sessionStorage.getItem(storageKey) ?? 'null') as { position: number[]; target: number[]; zoom: number } | null
-      if (saved && saved.position.length === 3 && saved.target.length === 3 && [...saved.position,...saved.target,saved.zoom].every(Number.isFinite)) { camera.position.set(saved.position[0],saved.position[1],saved.position[2]); camera.zoom=Math.max(10,Math.min(220,saved.zoom)); controls.current?.target.set(saved.target[0],saved.target[1],saved.target[2]) }
+      const saved = JSON.parse(sessionStorage.getItem(storageKey) ?? 'null') as { target: number[]; zoom: number } | null
+      if (saved && Array.isArray(saved.target) && saved.target.length === 3 && [...saved.target,saved.zoom].every(Number.isFinite)) {
+        camera.position.set(saved.target[0] + CAMERA_OFFSET[0], saved.target[1] + CAMERA_OFFSET[1], saved.target[2] + CAMERA_OFFSET[2])
+        camera.zoom = Math.max(minZoom, Math.min(MAX_CAMERA_ZOOM, saved.zoom))
+        controls.current?.target.set(saved.target[0],saved.target[1],saved.target[2])
+      }
     } catch { /* Use fitted camera. */ }
+    const target = controls.current?.target
+    camera.lookAt(target?.x ?? 0, target?.y ?? 0, target?.z ?? 0)
     camera.updateProjectionMatrix(); controls.current?.update(); invalidate()
-  }, [camera, invalidate, reset, size.width, size.height, storageKey])
-  return <MapControls ref={controls} makeDefault enableRotate={false} enableDamping minZoom={10} maxZoom={220} onEnd={() => { try { sessionStorage.setItem(storageKey, JSON.stringify({ position: camera.position.toArray(), target: controls.current?.target.toArray(), zoom: camera.zoom })) } catch { /* Camera persistence is optional. */ } }} />
+  }, [camera, fitZoom, invalidate, minZoom, reset, storageKey])
+  return <MapControls ref={controls} makeDefault enableRotate={false} enableDamping minZoom={minZoom} maxZoom={MAX_CAMERA_ZOOM} onEnd={() => { try { sessionStorage.setItem(storageKey, JSON.stringify({ target: controls.current?.target.toArray(), zoom: camera.zoom })) } catch { /* Camera persistence is optional. */ } }} />
 }
 function MapArt() {
   const texture = useMemo(() => parchmentTexture(), [])
@@ -65,7 +73,7 @@ function MapArt() {
 }
 export default function Board({ snapshot, selected, highlight, reset, onSelect }: { snapshot: Snapshot; selected: string | null; highlight: TicketResult | null; reset: number; onSelect: (route: Route) => void }) {
   const me = snapshot.public.players.find(player => player.playerId === snapshot.private.playerId)!
-  return <BoardBoundary><div className="rail-board-canvas" data-testid="rail-board"><Canvas orthographic shadows frameloop="demand" dpr={[1,1.5]} camera={{ position: [0,24,6], zoom: 40, near: .1, far: 80 }} gl={{ antialias: true }} fallback={<div>WebGL is unavailable. Use the accessible route list below.</div>}>
+  return <BoardBoundary><div className="rail-board-canvas" data-testid="rail-board"><Canvas orthographic shadows frameloop="demand" dpr={[1,1.5]} camera={{ position: CAMERA_OFFSET, zoom: 40, near: .1, far: 80 }} gl={{ antialias: true }} fallback={<div>WebGL is unavailable. Use the accessible route list below.</div>}>
     <color attach="background" args={['#30251b']} /><ambientLight intensity={1.5} /><directionalLight position={[-5,15,5]} intensity={2.1} castShadow shadow-mapSize={[1024,1024]} shadow-camera-left={-14} shadow-camera-right={14} shadow-camera-top={10} shadow-camera-bottom={-10} shadow-bias={-.001} />
     <MapArt />
     {ROUTES.map(route => <Track key={route.id} route={route} ownerColor={snapshot.public.players.find(player => player.playerId === snapshot.public.ownedRoutes[route.id])?.pieceColor} selected={selected === route.id} previewColor={me.pieceColor} emphasized={!!highlight && snapshot.public.ownedRoutes[route.id] === me.playerId} onSelect={onSelect} />)}
