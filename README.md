@@ -2,6 +2,10 @@
 
 React + TypeScript + Vite portfolio site, including the Board Game Menu planner at `/games/board-game-menu`.
 
+## Railway Tabletop
+
+The multiplayer USA railway game is at `/games/trains`, with persistent nickname-based rooms at `/games/trains/:code`. See [the implementation and deployment guide](docs/trains.md) for game rules, architecture, protocol, local testing, asset provenance and the `trains-v1` SQLite Durable Object migration. Production deployment requires an explicit release decision.
+
 ## Board Game Menu
 
 The feature is split into small modules under `src/features/board-game-menu`:

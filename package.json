@@ -11,8 +11,10 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:trains:e2e": "playwright test",
     "typecheck:functions": "tsc -p tsconfig.functions.json",
-    "check": "npm run lint && npm run test && npm run build && npm run typecheck:functions",
+    "typecheck:trains-tests": "tsc -p tsconfig.trains-tests.json",
+    "check": "npm run lint && npm run test && npm run build && npm run typecheck:functions && npm run typecheck:trains-tests",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "wrangler deploy"
@@ -27,11 +29,13 @@
     "react-icons": "^5.6.0",
     "react-router-dom": "^7.13.2",
     "tailwindcss": "^4.2.2",
-    "three": "^0.182.0"
+    "three": "^0.182.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260830.1",
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.65.0",
     "@types/node": "^24.12.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

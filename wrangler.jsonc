@@ -3,6 +3,14 @@
   "name": "mohammedelsaadi",
   "main": "./worker/index.ts",
   "compatibility_date": "2026-03-28",
+  "durable_objects": {
+    "bindings": [{ "name": "TRAIN_ROOMS", "class_name": "GameSession" }]
+  },
+  "migrations": [{ "tag": "trains-v1", "new_sqlite_classes": ["GameSession"] }],
+  "ratelimits": [
+    { "name": "TRAINS_CREATE_LIMIT", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } },
+    { "name": "TRAINS_ACCESS_LIMIT", "namespace_id": "1002", "simple": { "limit": 120, "period": 60 } }
+  ],
   "vars": {
     "PUBLIC_SITE_ORIGIN": "https://mohammedelsaadi.com"
   },

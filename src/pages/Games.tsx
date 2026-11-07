@@ -1,6 +1,4 @@
 import { Link } from "react-router-dom";
-import SplendidCover from "../assets/splendidrivalrycover.png";
-import SonoraScoreSheet from "../assets/sonora-score-sheet.png";
 
 function Games() {
   return (
@@ -30,24 +28,6 @@ function Games() {
 
         <section className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <Link
-            to="sonora-score-sheet"
-            className="group overflow-hidden rounded-2xl bg-white text-left text-gray-900 shadow-2xl transition hover:-translate-y-1 hover:shadow-emerald-950/40"
-          >
-            <div className="h-56 overflow-hidden bg-[#e7ced1]">
-              <img
-                src={SonoraScoreSheet}
-                alt="Sonora score sheet"
-                className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-              />
-            </div>
-            <div className="p-6">
-              <p className="text-sm font-bold uppercase tracking-wider text-emerald-700">Digital score sheet</p>
-              <h2 className="mt-2 text-2xl font-extrabold">Sonora Whiteboard</h2>
-              <p className="mt-3 text-gray-600">Mark the original score sheet and keep every stroke in this browser.</p>
-              <p className="mt-5 font-semibold text-emerald-700 transition group-hover:translate-x-1">Open score sheet →</p>
-            </div>
-          </Link>
-          <Link
             to="board-game-menu"
             className="group overflow-hidden rounded-2xl bg-amber-50 text-left text-gray-900 shadow-2xl transition hover:-translate-y-1 hover:shadow-emerald-950/40"
           >
@@ -65,34 +45,9 @@ function Games() {
               <p className="mt-5 font-semibold text-emerald-700 transition group-hover:translate-x-1">Build a menu →</p>
             </div>
           </Link>
-          <Link
-            to="splendid-rivalry"
-            className="group overflow-hidden rounded-2xl bg-white text-left text-gray-900 shadow-2xl transition hover:-translate-y-1 hover:shadow-emerald-950/40"
-          >
-<div className="h-56 overflow-hidden">
-  <img
-    src={SplendidCover}
-    alt="Splendid Rivalry cover"
-    className="h-full w-full object-fill transition duration-500 group-hover:scale-105"
-  />
-</div>
-            <div className="p-6">
-              <p className="text-sm font-bold uppercase tracking-wider text-emerald-700">
-                Three.js Game
-              </p>
-
-              <h2 className="mt-2 text-2xl font-extrabold">
-                Splendid Rivalry
-              </h2>
-
-              <p className="mt-3 text-gray-600">
-                This is my Three.js rendition of Splendor: Duel. Still a work in progress.
-              </p>
-
-              <p className="mt-5 font-semibold text-emerald-700 transition group-hover:translate-x-1">
-                Open game →
-              </p>
-            </div>
+          <Link to="trains" className="group overflow-hidden rounded-2xl bg-[#f3e7ce] text-left text-[#302319] shadow-2xl transition hover:-translate-y-1">
+            <div className="flex h-56 items-center justify-center bg-[#302319] text-center text-[#e7c685]" aria-hidden="true"><div><span className="text-6xl">✦</span><p className="mt-3 font-serif text-3xl">Railway Tabletop</p><p className="mt-2 text-xs uppercase tracking-[0.3em]">An evening across America</p></div></div>
+            <div className="p-6"><p className="text-sm font-bold uppercase tracking-wider text-emerald-800">Multiplayer railway game</p><h2 className="mt-2 text-2xl font-extrabold">Railway Tabletop</h2><p className="mt-3 text-stone-700">Collect carriages and connect cities at a shared 3D table for 2–5 friends.</p><p className="mt-5 font-semibold text-emerald-800">All aboard →</p></div>
           </Link>
         </section>
       </div>
