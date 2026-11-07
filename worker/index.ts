@@ -13,6 +13,9 @@ import { onRequestGet as getAdminMenus } from '../functions/api/board-game-menu/
 import { onRequestDelete as deleteTag, onRequestPut as updateTag } from '../functions/api/board-game-menu/admin/tags/[tagId]'
 import { onRequestGet as getTags, onRequestPost as createTag } from '../functions/api/board-game-menu/admin/tags/index'
 import type { Env } from '../functions/api/board-game-menu/_lib/types'
+import { dispatchTrains } from './trains/index'
+import type { TrainsEnv } from './trains/GameSession'
+export { GameSession } from './trains/GameSession'
 
 type Handler = PagesFunction<Env>
 
@@ -82,10 +85,11 @@ async function dispatchApi(request: Request, env: Env, execution: ExecutionConte
 }
 
 export default {
-  fetch(request: Request, env: Env, execution: ExecutionContext) {
+  fetch(request: Request, env: Env & TrainsEnv, execution: ExecutionContext) {
     const pathname = new URL(request.url).pathname
+    if (pathname.startsWith('/api/trains/')) return dispatchTrains(request, env)
     return pathname.startsWith('/api/')
       ? dispatchApi(request, env, execution)
       : env.ASSETS.fetch(request)
   },
-} satisfies ExportedHandler<Env>
+} satisfies ExportedHandler<Env & TrainsEnv>

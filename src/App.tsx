@@ -9,6 +9,7 @@ const BoardGameMenu = lazy(() => import('./pages/BoardGameMenu.tsx'));
 const BoardGameMenuSaved = lazy(() => import('./pages/BoardGameMenuSaved.tsx'));
 const BoardGameMenuAdmin = lazy(() => import('./pages/BoardGameMenuAdmin.tsx'));
 const SonoraWhiteboard = lazy(() => import('./pages/SonoraWhiteboard.tsx'));
+const Trains = lazy(() => import('./features/trains/pages/Trains.tsx'));
 
 function App() {
 return (
@@ -16,6 +17,8 @@ return (
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/games" element={<Games />} />
+        <Route path="/games/trains" element={<Trains />} />
+        <Route path="/games/trains/:code" element={<Trains />} />
         <Route path="/games/splendid-rivalry" element={<SplendidRivalry />} />
         <Route path="/games/sonora-score-sheet" element={<SonoraWhiteboard />} />
         <Route path="/games/board-game-menu" element={<BoardGameMenu />} />

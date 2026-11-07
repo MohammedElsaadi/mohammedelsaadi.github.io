@@ -29,3 +29,6 @@ dist-ssr
 *.sln
 *.sw?
 BOARD_GAME_MENU_CODEX_SPEC.md
+test-results/
+playwright-report/
+tmp/
